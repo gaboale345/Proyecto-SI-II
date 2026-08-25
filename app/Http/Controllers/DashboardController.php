@@ -59,19 +59,19 @@ class DashboardController extends Controller
         return view('paciente.dashboard', compact('user', 'paciente', 'proximasCitas', 'notificaciones', 'totalCitasRealizadas'));
     }
 
-    public function ventanillaDashboard()
+    public function ventanillaDashboard(Request $request)
     {
-        $today = Carbon::today()->format('Y-m-d');
+        $fecha = $request->input('fecha', Carbon::today()->format('Y-m-d'));
 
         $citasHoy = Cita::with(['paciente.usuario', 'medico.usuario', 'medico.especialidad'])
-            ->where('fecha_cita', $today)
+            ->where('fecha_cita', $fecha)
             ->orderBy('hora_cita', 'asc')
             ->get();
 
         $totalPacientes = Paciente::count();
         $especialidades = Especialidad::where('estado', 'ACTIVO')->get();
 
-        return view('ventanilla.dashboard', compact('citasHoy', 'totalPacientes', 'especialidades'));
+        return view('ventanilla.dashboard', compact('citasHoy', 'totalPacientes', 'especialidades', 'fecha'));
     }
 
     public function adminDashboard()

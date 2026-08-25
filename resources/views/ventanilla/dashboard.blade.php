@@ -19,9 +19,19 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <h3 class="card-title"><i class="fa-solid fa-calendar-day"></i> Citas Programadas para Hoy ({{ date('d/m/Y') }})</h3>
-        <span class="status-badge status-CONFIRMADA">{{ $citasHoy->count() }} turnos asignados</span>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h3 class="card-title"><i class="fa-solid fa-calendar-day"></i> Citas Programadas para {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</h3>
+            <span class="status-badge status-CONFIRMADA">{{ $citasHoy->count() }} turnos asignados</span>
+        </div>
+        <form action="{{ route('ventanilla.dashboard') }}" method="GET" style="display: flex; align-items: center; gap: 0.5rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <label for="fecha" style="font-weight: 600; font-size: 0.85rem; color: #475569;"><i class="fa-solid fa-filter"></i> Filtrar Fecha:</label>
+            <input type="date" id="fecha" name="fecha" value="{{ $fecha }}" class="form-control" style="padding: 0.35rem 0.6rem; font-size: 0.88rem; width: auto;" onchange="this.form.submit()">
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-search"></i> Buscar</button>
+            @if($fecha !== \Carbon\Carbon::today()->format('Y-m-d'))
+                <a href="{{ route('ventanilla.dashboard') }}" class="btn btn-sm btn-secondary" title="Ver citas de hoy"><i class="fa-solid fa-rotate-left"></i> Ver Hoy</a>
+            @endif
+        </form>
     </div>
 
     @if($citasHoy->count() > 0)
@@ -69,7 +79,7 @@
         </div>
     @else
         <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-            <p>No hay citas programadas para el día de hoy.</p>
+            <p><i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 0.5rem; display: block;"></i> No hay citas programadas para la fecha seleccionada ({{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}).</p>
         </div>
     @endif
 </div>

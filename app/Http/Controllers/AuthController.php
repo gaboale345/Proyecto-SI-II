@@ -83,6 +83,9 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'telefono_emergencia' => 'nullable|string|max:20',
             'contacto_emergencia' => 'nullable|string|max:100',
+        ], [
+            'email.unique' => 'El correo electrónico ya se encuentra registrado por otro paciente.',
+            'ci.unique' => 'La Cédula de Identidad (CI) ya se encuentra registrada por otro paciente.',
         ]);
 
         $rolPaciente = Role::where('nombre_rol', 'PACIENTE')->first();

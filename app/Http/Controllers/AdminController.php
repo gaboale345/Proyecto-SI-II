@@ -46,48 +46,76 @@ class AdminController extends Controller
 
     public function crearUsuario(Request $request)
     {
-        $data = $request->validate([
+        $rol = Role::findOrFail($request->input('id_rol'));
+
+        $rules = [
             'id_rol' => 'required|exists:roles,id_rol',
             'nombre' => 'required|string|max:50',
             'apellido' => 'required|string|max:50',
             'email' => 'required|email|max:100|unique:usuarios,email',
             'password' => 'required|string|min:6',
             'telefono' => 'required|string|max:20',
-            // Campos según rol
-            'ci' => 'nullable|string|max:15|unique:pacientes,ci',
             'fecha_nacimiento' => 'nullable|date',
             'genero' => 'nullable|string|in:MASCULINO,FEMENINO,OTRO',
-            'id_especialidad' => 'nullable|exists:especialidades,id_especialidad',
             'titulo' => 'nullable|string|max:100',
-            'numero_colegiatura' => 'nullable|string|max:30|unique:medicos,numero_colegiatura',
-        ]);
+        ];
 
-        $rol = Role::findOrFail($data['id_rol']);
+        if ($rol->nombre_rol === 'PACIENTE') {
+            if ($request->filled('ci')) {
+                $rules['ci'] = 'string|max:15|unique:pacientes,ci';
+            }
+        } elseif ($rol->nombre_rol === 'MEDICO') {
+            $rules['id_especialidad'] = 'required|exists:especialidades,id_especialidad';
+            if ($request->filled('numero_colegiatura')) {
+                $rules['numero_colegiatura'] = 'string|max:30|unique:medicos,numero_colegiatura';
+            }
+        }
+
+        $messages = [
+            'email.unique' => 'El correo electrónico ya se encuentra registrado por otro usuario.',
+            'ci.unique' => 'La Cédula de Identidad (CI) ya se encuentra registrada por otro paciente.',
+            'numero_colegiatura.unique' => 'El número de colegiatura ya está registrado por otro médico.',
+            'id_especialidad.required' => 'Debe seleccionar una especialidad médica obligatoria.',
+            'id_especialidad.exists' => 'La especialidad seleccionada es inválida.',
+            'nombre.required' => 'El nombre es obligatorio.',
+            'apellido.required' => 'El apellido es obligatorio.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
+        ];
+
+        $data = $request->validate($rules, $messages);
 
         $usuario = Usuario::create([
             'id_rol' => $data['id_rol'],
-            'nombre' => $data['nombre'],
-            'apellido' => $data['apellido'],
-            'email' => $data['email'],
+            'nombre' => trim($data['nombre']),
+            'apellido' => trim($data['apellido']),
+            'email' => trim($data['email']),
             'password' => Hash::make($data['password']),
-            'telefono' => $data['telefono'],
+            'telefono' => trim($data['telefono']),
             'estado' => 'ACTIVO',
             'fecha_registro' => now(),
         ]);
 
         if ($rol->nombre_rol === 'PACIENTE') {
+            $ciValue = $request->filled('ci') ? trim($request->input('ci')) : (string)rand(1000000, 9999999);
             Paciente::create([
                 'id_usuario' => $usuario->id_usuario,
-                'ci' => $data['ci'] ?? rand(1000000, 9999999),
-                'fecha_nacimiento' => $data['fecha_nacimiento'] ?? '1995-01-01',
-                'genero' => $data['genero'] ?? 'MASCULINO',
+                'ci' => $ciValue,
+                'fecha_nacimiento' => $request->input('fecha_nacimiento') ?: '1995-01-01',
+                'genero' => $request->input('genero') ?: 'MASCULINO',
             ]);
         } elseif ($rol->nombre_rol === 'MEDICO') {
+            $colegiaturaValue = $request->filled('numero_colegiatura') 
+                ? trim($request->input('numero_colegiatura')) 
+                : 'MP-' . rand(10000, 99999);
+
             Medico::create([
                 'id_usuario' => $usuario->id_usuario,
                 'id_especialidad' => $data['id_especialidad'],
-                'titulo' => $data['titulo'] ?? 'Médico Especialista',
-                'numero_colegiatura' => $data['numero_colegiatura'] ?? 'MP-' . rand(10000, 99999),
+                'titulo' => $request->filled('titulo') ? trim($request->input('titulo')) : 'Médico Especialista',
+                'numero_colegiatura' => $colegiaturaValue,
                 'estado' => 'ACTIVO',
             ]);
         }

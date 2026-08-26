@@ -93,7 +93,9 @@
                 <label class="form-label">Rol del Usuario *</label>
                 <select name="id_rol" id="id_rol_select" class="form-select" onchange="toggleRolFields()" required>
                     @foreach($roles as $r)
-                        <option value="{{ $r->id_rol }}" data-role="{{ $r->nombre_rol }}">{{ $r->nombre_rol }} - {{ $r->descripcion }}</option>
+                        <option value="{{ $r->id_rol }}" data-role="{{ $r->nombre_rol }}" {{ old('id_rol') == $r->id_rol ? 'selected' : '' }}>
+                            {{ $r->nombre_rol }} - {{ $r->descripcion }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -101,22 +103,22 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label class="form-label">Nombre *</label>
-                    <input type="text" name="nombre" class="form-control" required>
+                    <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Apellido *</label>
-                    <input type="text" name="apellido" class="form-control" required>
+                    <input type="text" name="apellido" class="form-control" value="{{ old('apellido') }}" required>
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label class="form-label">Email *</label>
-                    <input type="email" name="email" class="form-control" required>
+                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Teléfono *</label>
-                    <input type="text" name="telefono" class="form-control" required>
+                    <input type="text" name="telefono" class="form-control" value="{{ old('telefono') }}" required>
                 </div>
             </div>
 
@@ -130,12 +132,12 @@
                 <h4 style="font-size: 0.9rem; color: var(--primary); margin-bottom: 0.5rem;">Datos de Paciente</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">Cédula de Identidad (CI) *</label>
-                        <input type="text" name="ci" class="form-control">
+                        <label class="form-label">Cédula de Identidad (CI)</label>
+                        <input type="text" name="ci" class="form-control" value="{{ old('ci') }}" placeholder="Opcional (Auto-generado si está vacío)">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Fecha Nacimiento *</label>
-                        <input type="date" name="fecha_nacimiento" class="form-control">
+                        <label class="form-label">Fecha Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" class="form-control" value="{{ old('fecha_nacimiento') }}">
                     </div>
                 </div>
             </div>
@@ -144,20 +146,23 @@
                 <h4 style="font-size: 0.9rem; color: var(--primary); margin-bottom: 0.5rem;">Datos de Médico</h4>
                 <div class="form-group">
                     <label class="form-label">Especialidad *</label>
-                    <select name="id_especialidad" class="form-select">
+                    <select name="id_especialidad" id="id_especialidad_select" class="form-select">
+                        <option value="">-- Seleccionar Especialidad --</option>
                         @foreach($especialidades as $esp)
-                            <option value="{{ $esp->id_especialidad }}">{{ $esp->nombre }}</option>
+                            <option value="{{ $esp->id_especialidad }}" {{ old('id_especialidad') == $esp->id_especialidad ? 'selected' : '' }}>
+                                {{ $esp->nombre }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
                         <label class="form-label">Título Profesional</label>
-                        <input type="text" name="titulo" class="form-control" placeholder="Ej: Cirujano Pediatra">
+                        <input type="text" name="titulo" class="form-control" value="{{ old('titulo') }}" placeholder="Ej: Cirujano Pediatra">
                     </div>
                     <div class="form-group">
                         <label class="form-label">N° Colegiatura</label>
-                        <input type="text" name="numero_colegiatura" class="form-control" placeholder="Ej: MP-99887">
+                        <input type="text" name="numero_colegiatura" class="form-control" value="{{ old('numero_colegiatura') }}" placeholder="Ej: MP-99887 (Auto-generado si está vacío)">
                     </div>
                 </div>
             </div>
@@ -180,13 +185,30 @@
 
     function toggleRolFields() {
         const select = document.getElementById('id_rol_select');
+        if (!select) return;
         const selectedOption = select.options[select.selectedIndex];
-        const role = selectedOption.getAttribute('data-role');
+        const role = selectedOption ? selectedOption.getAttribute('data-role') : '';
 
-        document.getElementById('fieldsPaciente').style.display = (role === 'PACIENTE') ? 'block' : 'none';
-        document.getElementById('fieldsMedico').style.display = (role === 'MEDICO') ? 'block' : 'none';
+        const fieldsPaciente = document.getElementById('fieldsPaciente');
+        const fieldsMedico = document.getElementById('fieldsMedico');
+        const espSelect = document.getElementById('id_especialidad_select');
+
+        if (fieldsPaciente) fieldsPaciente.style.display = (role === 'PACIENTE') ? 'block' : 'none';
+        if (fieldsMedico) fieldsMedico.style.display = (role === 'MEDICO') ? 'block' : 'none';
+        if (espSelect) {
+            if (role === 'MEDICO') {
+                espSelect.setAttribute('required', 'required');
+            } else {
+                espSelect.removeAttribute('required');
+            }
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', toggleRolFields);
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleRolFields();
+        @if($errors->any())
+            toggleModal('modalNuevoUsuario');
+        @endif
+    });
 </script>
 @endsection

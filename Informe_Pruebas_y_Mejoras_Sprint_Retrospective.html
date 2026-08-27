@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Pruebas y Mejoras - Sprint Retrospective</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+            font-size: 11pt;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Front Page / Cover */
+        .cover {
+            page-break-after: always;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            border: 2px solid #0f4c81;
+            padding: 40px;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .cover-header {
+            margin-top: 20px;
+        }
+
+        .university-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #093156;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .faculty-name {
+            font-size: 12pt;
+            color: #475569;
+            margin-top: 5px;
+        }
+
+        .project-title-box {
+            margin: 40px 0;
+            background: #f0f7ff;
+            padding: 30px;
+            border-left: 6px solid #0f4c81;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .system-title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #0f4c81;
+            margin-bottom: 10px;
+        }
+
+        .document-subtitle {
+            font-size: 14pt;
+            font-weight: 600;
+            color: #00b4d8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .team-box {
+            text-align: left;
+            margin-top: 30px;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 20px;
+        }
+
+        .team-title {
+            font-weight: bold;
+            color: #093156;
+            margin-bottom: 10px;
+            font-size: 11pt;
+        }
+
+        .team-member {
+            font-size: 10pt;
+            margin-bottom: 4px;
+            color: #334155;
+        }
+
+        .cover-footer {
+            margin-bottom: 10px;
+            font-size: 10pt;
+            color: #64748b;
+        }
+
+        /* Content Styling */
+        h1 {
+            color: #0f4c81;
+            font-size: 16pt;
+            border-bottom: 2px solid #0f4c81;
+            padding-bottom: 6px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            color: #093156;
+            font-size: 13pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            color: #334155;
+            font-size: 11pt;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-top: 5px;
+            margin-bottom: 12px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            margin-bottom: 20px;
+            font-size: 9.5pt;
+        }
+
+        th {
+            background-color: #0f4c81;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px 10px;
+            border: 1px solid #0f4c81;
+        }
+
+        td {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .badge-pass {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            display: inline-block;
+        }
+
+        .card-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .signature-item {
+            text-align: center;
+            border-top: 1px solid #94a3b8;
+            padding-top: 8px;
+            font-size: 9.5pt;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="cover">
+        <div class="cover-header">
+            <div class="university-name">HOSPITAL MUNICIPAL PLAN 3000</div>
+            <div class="faculty-name">Distrito Municipal 8 — Santa Cruz de la Sierra, Bolivia</div>
+            <div class="faculty-name" style="margin-top: 15px; font-weight: bold; color: #0f4c81;">PROYECTO DE SISTEMAS DE INFORMACIÓN II</div>
+        </div>
+
+        <div class="project-title-box">
+            <div class="system-title">Sistema Digital de Gestión de Citas, Turnos y Expediente Clínico (ECE)</div>
+            <div class="document-subtitle">Informe de Pruebas de Software & Sprint Retrospective</div>
+        </div>
+
+        <div class="team-box">
+            <div class="team-title">EQUIPO DE DESARROLLO & CONTROL DE CALIDAD (QA):</div>
+            <div class="team-member"><strong>Gabriel Alcon</strong> — Desarrollador Front-end / UI/UX</div>
+            <div class="team-member"><strong>Rudi Condo</strong> — Desarrollador Back-end / API</div>
+            <div class="team-member"><strong>Olver Alvarez</strong> — Desarrollador Full-stack / Base de Datos / Product Owner</div>
+            <div class="team-member"><strong>Mijail Galarza</strong> — Desarrollador Front-end / QA / Scrum Master</div>
+        </div>
+
+        <div class="cover-footer">
+            <strong>Fecha de Emisión:</strong> 27 de Agosto de 2026<br>
+            Santa Cruz de la Sierra, Bolivia
+        </div>
+    </div>
+
+    <!-- PÁGINA 1: OBJETIVOS Y ALCANCE -->
+    <h1>1. Resumen Ejecutivo y Alcance del Proyecto</h1>
+    <p>
+        El presente documento constituye el **Informe Oficial de Pruebas y Mejoras (Sprint Retrospective)** correspondiente a la fase final de desarrollo e implementación del **Sistema Digital de Gestión de Citas, Turnos y Expediente Clínico Electrónico (ECE)** para el **Hospital Municipal Plan 3000** (Santa Cruz de la Sierra, Bolivia).
+    </p>
+    <p>
+        El objetivo principal del sistema es solucionar el colapso en ventanillas presenciales, reducir los tiempos de espera del paciente, digitalizar el flujo médico completo y brindar trazabilidad financiera e institucional bajo estándares de seguridad y privacidad clínica.
+    </p>
+
+    <h2>1.1 Módulos Implementados al 100%</h2>
+    <ul>
+        <li><strong>Módulo Paciente:</strong> Perfil extendido, expediente médico base, historial clínico cronológico (ECE), reprogramación de citas y centro de descarga/impresión de recetas y certificados médicos.</li>
+        <li><strong>Módulo Ventanilla / Recepción:</strong> Sala de espera con monitor de cola en tiempo real, registro presencial <em>Walk-in</em> con algoritmo antiduplicados, asignación de consultorios y módulo de Caja & Cobros multicanal con Cierre Diario.</li>
+        <li><strong>Módulo Médico (ECE & Especialidades):</strong> Formulario clínico interactivo adaptado para **Cardiología, Pediatría, Medicina General, Ginecología y Traumatología**, con emisión directa de Recetas Digitales.</li>
+        <li><strong>Módulo Administrador:</strong> Gestión de consultorios físicos, generador masivo de agendas médicas, reportes dinámicos exportables en CSV/PDF y configuración general institucional.</li>
+        <li><strong>Seguridad y Trazabilidad:</strong> Autenticación RBAC (4 roles), protección de visibilidad de datos médicos sensibles y auditoría en base de datos (RNF04).</li>
+    </ul>
+
+    <!-- PÁGINA 2: MATRIZ DE PRUEBAS -->
+    <h1 style="page-break-before: always;">2. Matriz de Pruebas de Software (QA Test Report)</h1>
+    <p>
+        A continuación se detalla el conjunto de casos de prueba ejecutados para validar la estabilidad funcional, la integridad de los datos y el rendimiento del sistema en entorno local de producción.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%;">ID</th>
+                <th style="width: 25%;">Caso de Prueba</th>
+                <th style="width: 32%;">Comportamiento Esperado</th>
+                <th style="width: 25%;">Resultado Obtenido</th>
+                <th style="width: 10%;">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>CP-01</strong></td>
+                <td>Autenticación y RBAC</td>
+                <td>Restringir acceso a vistas según rol (PACIENTE, MEDICO, CALL_CENTER, ADMIN).</td>
+                <td>Redirección correcta y bloqueo de rutas no autorizadas en backend.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-02</strong></td>
+                <td>Prevención Duplicados Walk-in</td>
+                <td>Detectar si una CI de paciente ya existe al registrar presencialmente.</td>
+                <td>Bloqueo inmediato del formulario y alerta clara en pantalla de ventanilla.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-03</strong></td>
+                <td>Check-in Sala de Espera</td>
+                <td>Registrar hora de llegada, asignar consultorio y pasar a estado "EN_ESPERA".</td>
+                <td>Actualización inmediata de la cola y notificación visual a pantalla médica.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-04</strong></td>
+                <td>Cobro en Caja y Comprobante</td>
+                <td>Registrar cobro (Efectivo, Tarjeta, QR), generar comprobante REC-XXXX.</td>
+                <td>Comprobante generado, total reflejado en Arqueo de Caja diario.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-05</strong></td>
+                <td>ECE Cardiología</td>
+                <td>Formulario específico con cálculo automático de IMC, PA y FC.</td>
+                <td>IMC calculado dinámicamente vía JavaScript y guardado en DB.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-06</strong></td>
+                <td>ECE Pediatría</td>
+                <td>Registro de tutor, percentiles de crecimiento y vacunas.</td>
+                <td>Datos pediátricos almacenados y asociados a la historia del paciente.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-07</strong></td>
+                <td>Emisión de Receta Digital</td>
+                <td>Generar documento de receta con código de verificación al guardar consulta.</td>
+                <td>Documento visible e imprimible en PDF en la cuenta del paciente.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-08</strong></td>
+                <td>Reprogramación por Paciente</td>
+                <td>Liberar cupo anterior, asignar nuevo horario y cambiar estado.</td>
+                <td>La agenda previa incrementa disponibilidad y la nueva se reserva.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-09</strong></td>
+                <td>Generador Masivo de Agendas</td>
+                <td>Generar cupos automáticos por rango de fechas y minutos por consulta.</td>
+                <td>Creación exitosa de agendas omitiendo domingos.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+            <tr>
+                <td><strong>CP-10</strong></td>
+                <td>Exportación de Reportes</td>
+                <td>Filtrar por fechas y descargar reporte en formato CSV / Excel.</td>
+                <td>Descarga limpia de archivo `.csv` con delimitadores válidos.</td>
+                <td><span class="badge-pass">EXITOSO</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- PÁGINA 3: SPRINT RETROSPECTIVE -->
+    <h1 style="page-break-before: always;">3. Sprint Retrospective (Evaluación Metodológica Scrum)</h1>
+
+    <div class="card-box">
+        <h2 style="margin-top: 0; color: #15803d;">✔ 3.1 ¿Qué funcionó muy bien? (What Went Well)</h2>
+        <ul>
+            <li><strong>Arquitectura Robusta y Escalable:</strong> La separación mediante el patrón MVC en Laravel 11 permitió integrar los 12 módulos de forma modular sin acoplamiento.</li>
+            <li><strong>Adopción de Formularios Especializados:</strong> La adaptación clínica por especialidades (Cardiología, Pediatría, Ginecología, Traumatología) convirtió el sistema en una herramienta médica real y útil.</li>
+            <li><strong>Optimización de Tiempos en Recepción:</strong> La incorporación del flujo "Sala de Espera" y "Cobro en Caja" redujo significativamente la fricción operativa en ventanilla.</li>
+            <li><strong>Trazabilidad Completa:</strong> Cada acción crítica (pago, cambio de estado, edición de usuario) queda registrada de manera inmutable en la tabla de auditoría.</li>
+        </ul>
+    </div>
+
+    <div class="card-box">
+        <h2 style="margin-top: 0; color: #b45309;">⚠ 3.2 Oportunidades de Mejora Identificadas (What Could Be Improved)</h2>
+        <ul>
+            <li><strong>Integración con Firma Digital Certificada:</strong> Integrar certificados digitales PKI (.p12) para validar legalmente las recetas emitidas por los médicos.</li>
+            <li><strong>Pasarela de Pago QR Automática:</strong> Conectar la pasarela de cobro directamente con APIs bancarias (Banco Unión / QR Simple) mediante Webhooks de notificación instantánea.</li>
+            <li><strong>Envío de Notificaciones Reales:</strong> Migrar la simulación de notificaciones a servicios reales de WhatsApp API (Twilio) y SMS institucional.</li>
+        </ul>
+    </div>
+
+    <div class="card-box">
+        <h2 style="margin-top: 0; color: #0369a1;">📌 3.3 Plan de Acción para Siguientes Incrementos (Action Items)</h2>
+        <ol>
+            <li>Desarrollar el Módulo de Inventario de Farmacia y Dispensación de Medicamentos.</li>
+            <li>Implementar el Módulo de Telemedicina y Consultas Médicas Virtuales por Videollamada.</li>
+            <li>Incorporar Integración con el Sistema Único de Información en Salud (SUIS Bolivia).</li>
+        </ol>
+    </div>
+
+</body>
+</html>

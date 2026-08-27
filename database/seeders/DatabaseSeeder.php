@@ -14,6 +14,11 @@ use App\Models\Cita;
 use App\Models\Notificacion;
 use App\Models\Configuracion;
 use App\Models\Auditoria;
+use App\Models\Consultorio;
+use App\Models\ExpedienteMedico;
+use App\Models\Consulta;
+use App\Models\ConsultaCardiologia;
+use App\Models\Pago;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -348,6 +353,62 @@ class DatabaseSeeder extends Seeder
                 'estado' => 'ENVIADO',
             ]);
         }
+
+        // Consultorios
+        $cons1 = Consultorio::create([
+            'nombre_numero' => 'Consultorio 101 - Bloque A',
+            'id_especialidad' => $espCardio->id_especialidad,
+            'id_medico' => $medico1->id_medico,
+            'estado' => 'DISPONIBLE',
+            'equipamiento' => 'Electrocardiógrafo, Monitor de Presión Arterial, Ecocardiógrafo Portable',
+        ]);
+
+        $cons2 = Consultorio::create([
+            'nombre_numero' => 'Consultorio 102 - Bloque A',
+            'id_especialidad' => $espPedia->id_especialidad,
+            'id_medico' => $medico2->id_medico,
+            'estado' => 'DISPONIBLE',
+            'equipamiento' => 'Báscula pediátrica, Cinta de perímetro cefálico, Camilla de exploración',
+        ]);
+
+        $cons3 = Consultorio::create([
+            'nombre_numero' => 'Consultorio 103 - Bloque B',
+            'id_especialidad' => $espMedGen->id_especialidad,
+            'id_medico' => $medico3->id_medico,
+            'estado' => 'DISPONIBLE',
+            'equipamiento' => 'Estetoscopio, Tensiómetro, Termómetro digital, Oftalmoscopio',
+        ]);
+
+        // Expedientes Médicos Iniciales
+        ExpedienteMedico::create([
+            'id_paciente' => $paciente1->id_paciente,
+            'tipo_sangre' => 'O+',
+            'alergias' => 'Penicilina',
+            'alergias_medicamentosas' => 'Aspirina a dosis altas',
+            'enfermedades_cronicas' => 'Hipertensión Arterial Grado I',
+            'antecedentes_personales' => 'Fumador ocasional',
+            'antecedentes_familiares' => 'Padre con diabetes tipo 2',
+            'cirugias_previas' => 'Apendicectomía (2015)',
+            'hospitalizaciones' => 'Ninguna reciente',
+            'medicamentos_actuales' => 'Losartán 50mg cada 24h',
+            'habitos' => 'Ejercicio 2 veces por semana',
+            'observaciones_medicas' => 'Paciente adherente al tratamiento antihipertensivo',
+        ]);
+
+        ExpedienteMedico::create([
+            'id_paciente' => $paciente2->id_paciente,
+            'tipo_sangre' => 'A+',
+            'alergias' => 'Polen, Polvo',
+            'alergias_medicamentosas' => 'Ninguna conocida',
+            'enfermedades_cronicas' => 'Rinitis alérgica',
+            'antecedentes_personales' => 'Ninguno',
+            'antecedentes_familiares' => 'Madre con hipertensión arterial',
+            'cirugias_previas' => 'Ninguna',
+            'hospitalizaciones' => 'Ninguna',
+            'medicamentos_actuales' => 'Cetirizina 10mg en crisis',
+            'habitos' => 'No fuma, no consume alcohol',
+            'observaciones_medicas' => 'Sin complicaciones agudas',
+        ]);
 
         // 6. Configuraciones del Sistema
         Configuracion::create(['clave' => 'NOMBRE_HOSPITAL', 'valor' => 'Hospital Municipal Plan 3000', 'descripcion' => 'Nombre institucional']);

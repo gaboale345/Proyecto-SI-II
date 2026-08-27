@@ -63,26 +63,22 @@
                         <td style="font-size: 0.85rem; color: #475569;">{{ $c->observaciones ?? 'Consulta programada' }}</td>
                         <td><span class="status-badge status-{{ $c->estado }}">{{ $c->estado }}</span></td>
                         <td>
-                            @if(in_array($c->estado, ['SOLICITADA', 'CONFIRMADA']))
-                                <div style="display: flex; gap: 0.35rem;">
-                                    <form action="{{ route('medico.cita.estado', $c->id_cita) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="estado" value="ATENDIDA">
-                                        <button type="submit" class="btn btn-sm btn-primary" title="Marcar como Atendido">
-                                            <i class="fa-solid fa-check-double"></i> Atender
-                                        </button>
-                                    </form>
+                            @if(in_array($c->estado, ['SOLICITADA', 'CONFIRMADA', 'EN_ESPERA', 'EN_CONSULTA']))
+                                <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                                    <a href="{{ route('medico.cita.atender', $c->id_cita) }}" class="btn btn-sm btn-primary">
+                                        <i class="fa-solid fa-stethoscope"></i> Atender ECE
+                                    </a>
 
                                     <form action="{{ route('medico.cita.estado', $c->id_cita) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="estado" value="NO_ASISTIO">
                                         <button type="submit" class="btn btn-sm btn-secondary" title="Marcar Inasistencia">
-                                            <i class="fa-solid fa-user-xmark"></i> Inasistencia
+                                            <i class="fa-solid fa-user-xmark"></i> Ausente
                                         </button>
                                     </form>
                                 </div>
                             @else
-                                <span style="font-size: 0.8rem; color: #94a3b8;">Finalizado</span>
+                                <span style="font-size: 0.8rem; color: #166534; font-weight: bold;"><i class="fa-solid fa-check"></i> Consulta Registrada</span>
                             @endif
                         </td>
                     </tr>

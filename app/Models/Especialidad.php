@@ -15,12 +15,18 @@ class Especialidad extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'duracion_turno',
+        'duracion_minutos',
+        'precio_consulta',
         'estado',
     ];
 
     public function medicos()
     {
         return $this->hasMany(Medico::class, 'id_especialidad', 'id_especialidad');
+    }
+
+    public function consultorios()
+    {
+        return $this->hasMany(Consultorio::class, 'id_especialidad', 'id_especialidad');
     }
 }

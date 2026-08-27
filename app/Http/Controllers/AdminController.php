@@ -9,8 +9,13 @@ use App\Models\Role;
 use App\Models\Paciente;
 use App\Models\Medico;
 use App\Models\Especialidad;
+use App\Models\Consultorio;
+use App\Models\Agenda;
+use App\Models\Pago;
 use App\Models\Auditoria;
 use App\Models\Cita;
+use App\Models\Configuracion;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -71,21 +76,7 @@ class AdminController extends Controller
             }
         }
 
-        $messages = [
-            'email.unique' => 'El correo electrónico ya se encuentra registrado por otro usuario.',
-            'ci.unique' => 'La Cédula de Identidad (CI) ya se encuentra registrada por otro paciente.',
-            'numero_colegiatura.unique' => 'El número de colegiatura ya está registrado por otro médico.',
-            'id_especialidad.required' => 'Debe seleccionar una especialidad médica obligatoria.',
-            'id_especialidad.exists' => 'La especialidad seleccionada es inválida.',
-            'nombre.required' => 'El nombre es obligatorio.',
-            'apellido.required' => 'El apellido es obligatorio.',
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'telefono.required' => 'El teléfono es obligatorio.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
-        ];
-
-        $data = $request->validate($rules, $messages);
+        $data = $request->validate($rules);
 
         $usuario = Usuario::create([
             'id_rol' => $data['id_rol'],
@@ -151,6 +142,87 @@ class AdminController extends Controller
         return back()->with('success', "El estado del usuario {$usuario->nombre_completo} cambió a {$nuevoEstado}.");
     }
 
+    public function consultoriosIndex()
+    {
+        $consultorios = Consultorio::with(['especialidad', 'medico.usuario'])->get();
+        $especialidades = Especialidad::where('estado', 'ACTIVO')->get();
+        $medicos = Medico::with('usuario')->where('estado', 'ACTIVO')->get();
+
+        return view('admin.consultorios', compact('consultorios', 'especialidades', 'medicos'));
+    }
+
+    public function consultoriosStore(Request $request)
+    {
+        $request->validate([
+            'nombre_numero' => 'required|string|max:50',
+            'id_especialidad' => 'nullable|exists:especialidades,id_especialidad',
+            'id_medico' => 'nullable|exists:medicos,id_medico',
+            'equipamiento' => 'nullable|string',
+        ]);
+
+        Consultorio::create([
+            'nombre_numero' => $request->nombre_numero,
+            'id_especialidad' => $request->id_especialidad,
+            'id_medico' => $request->id_medico,
+            'estado' => 'DISPONIBLE',
+            'equipamiento' => $request->equipamiento,
+        ]);
+
+        return back()->with('success', 'Consultorio registrado exitosamente.');
+    }
+
+    public function generarHorariosMasivos(Request $request)
+    {
+        $request->validate([
+            'id_medico' => 'required|exists:medicos,id_medico',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'hora_inicio' => 'required',
+            'hora_fin' => 'required',
+            'duracion_minutos' => 'required|integer|min:5|max:60',
+        ]);
+
+        $medico = Medico::findOrFail($request->id_medico);
+        $inicio = Carbon::parse($request->fecha_inicio);
+        $fin = Carbon::parse($request->fecha_fin);
+        $duracion = (int)$request->duracion_minutos;
+
+        $creados = 0;
+        for ($date = $inicio->copy(); $date->lte($fin); $date->addDay()) {
+            if ($date->isSunday()) continue;
+
+            $timeStart = Carbon::createFromFormat('Y-m-d H:i', $date->format('Y-m-d') . ' ' . $request->hora_inicio);
+            $timeEnd = Carbon::createFromFormat('Y-m-d H:i', $date->format('Y-m-d') . ' ' . $request->hora_fin);
+
+            while ($timeStart->copy()->addMinutes($duracion)->lte($timeEnd)) {
+                $slotStart = $timeStart->format('H:i');
+                $slotEnd = $timeStart->copy()->addMinutes($duracion)->format('H:i');
+
+                $exists = Agenda::where('id_medico', $medico->id_medico)
+                    ->where('fecha', $date->format('Y-m-d'))
+                    ->where('hora_inicio', $slotStart)
+                    ->exists();
+
+                if (!$exists) {
+                    Agenda::create([
+                        'id_medico' => $medico->id_medico,
+                        'fecha' => $date->format('Y-m-d'),
+                        'hora_inicio' => $slotStart,
+                        'hora_fin' => $slotEnd,
+                        'capacidad' => 1,
+                        'disponibles' => 1,
+                        'estado' => 'DISPONIBLE',
+                    ]);
+                    $creados++;
+                }
+
+                $timeStart->addMinutes($duracion);
+            }
+        }
+
+        return back()->with('success', "Se generaron automáticamente {$creados} horarios para el médico.");
+    }
+
     public function auditoria()
     {
         $auditorias = Auditoria::with('usuario')
@@ -160,18 +232,71 @@ class AdminController extends Controller
         return view('admin.auditoria', compact('auditorias'));
     }
 
-    public function reportes()
+    public function reportes(Request $request)
     {
-        $citasPorEstado = Cita::selectRaw('estado, count(*) as total')
+        $fechaInicio = $request->get('fecha_inicio', Carbon::today()->startOfMonth()->format('Y-m-d'));
+        $fechaFin = $request->get('fecha_fin', Carbon::today()->format('Y-m-d'));
+
+        $citasPorEstado = Cita::whereBetween('fecha_cita', [$fechaInicio, $fechaFin])
+            ->selectRaw('estado, count(*) as total')
             ->groupBy('estado')
             ->pluck('total', 'estado');
 
         $citasPorEspecialidad = Cita::join('medicos', 'citas.id_medico', '=', 'medicos.id_medico')
             ->join('especialidades', 'medicos.id_especialidad', '=', 'especialidades.id_especialidad')
+            ->whereBetween('fecha_cita', [$fechaInicio, $fechaFin])
             ->selectRaw('especialidades.nombre as especialidad, count(*) as total')
             ->groupBy('especialidades.nombre')
             ->pluck('total', 'especialidad');
 
-        return view('admin.reportes', compact('citasPorEstado', 'citasPorEspecialidad'));
+        $pagosTotal = Pago::whereBetween('created_at', [$fechaInicio . ' 00:00:00', $fechaFin . ' 23:59:59'])->sum('monto_pagado');
+
+        return view('admin.reportes', compact('citasPorEstado', 'citasPorEspecialidad', 'pagosTotal', 'fechaInicio', 'fechaFin'));
+    }
+
+    public function exportarReporte(Request $request)
+    {
+        $tipo = $request->get('tipo', 'csv');
+        $citas = Cita::with(['paciente.usuario', 'medico.usuario', 'medico.especialidad'])->get();
+
+        if ($tipo === 'csv') {
+            $filename = "reporte_citas_" . date('Ymd_His') . ".csv";
+            $handle = fopen('php://output', 'w');
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            fputcsv($handle, ['ID Cita', 'Paciente', 'CI', 'Especialidad', 'Medico', 'Fecha Cita', 'Hora', 'Estado']);
+
+            foreach ($citas as $c) {
+                fputcsv($handle, [
+                    $c->id_cita,
+                    $c->paciente->usuario->nombre . ' ' . $c->paciente->usuario->apellido,
+                    $c->paciente->ci,
+                    $c->medico->especialidad->nombre ?? 'N/A',
+                    $c->medico->usuario->nombre . ' ' . $c->medico->usuario->apellido,
+                    $c->fecha_cita->format('Y-m-d'),
+                    $c->hora_cita,
+                    $c->estado
+                ]);
+            }
+            fclose($handle);
+            exit;
+        }
+
+        return redirect()->back()->with('success', 'Reporte exportado exitosamente.');
+    }
+
+    public function configuracionIndex()
+    {
+        $configuraciones = Configuracion::all();
+        return view('admin.configuracion', compact('configuraciones'));
+    }
+
+    public function configuracionUpdate(Request $request)
+    {
+        foreach ($request->except('_token') as $clave => $valor) {
+            Configuracion::where('clave', $clave)->update(['valor' => $valor]);
+        }
+
+        return back()->with('success', 'Configuraciones de la clínica actualizadas correctamente.');
     }
 }

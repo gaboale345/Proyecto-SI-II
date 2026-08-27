@@ -39,11 +39,10 @@
             flex-direction: column;
         }
 
-        /* Top Header Navigation */
         .navbar {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,6 +50,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            flex-wrap: wrap;
         }
 
         .navbar-brand {
@@ -60,7 +60,7 @@
             text-decoration: none;
             color: white;
             font-weight: 700;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
         }
 
         .navbar-brand i {
@@ -71,21 +71,22 @@
         .navbar-nav {
             display: flex;
             align-items: center;
-            gap: 1.25rem;
+            gap: 0.5rem;
             list-style: none;
+            flex-wrap: wrap;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             font-weight: 500;
-            padding: 0.5rem 0.85rem;
+            padding: 0.45rem 0.7rem;
             border-radius: 6px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
         .nav-link:hover, .nav-link.active {
@@ -106,16 +107,14 @@
         .badge-ventanilla { background-color: #f59e0b; color: white; }
         .badge-paciente { background-color: #3b82f6; color: white; }
 
-        /* Container & Grid */
         .container {
-            max-width: 1240px;
+            max-width: 1280px;
             width: 100%;
             margin: 1.75rem auto;
             padding: 0 1.25rem;
             flex: 1;
         }
 
-        /* Glassmorphism Card */
         .card {
             background: white;
             border-radius: 12px;
@@ -143,7 +142,6 @@
             gap: 0.5rem;
         }
 
-        /* Alert Banners */
         .alert {
             padding: 1rem 1.25rem;
             border-radius: 8px;
@@ -157,7 +155,6 @@
         .alert-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
         .alert-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
-        /* Custom Table */
         .table-responsive {
             overflow-x: auto;
         }
@@ -183,7 +180,6 @@
             background-color: #f8fafc;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -205,9 +201,10 @@
         .btn-danger:hover { background-color: #c1121f; }
         .btn-secondary { background-color: #e2e8f0; color: #334155; }
         .btn-secondary:hover { background-color: #cbd5e1; }
+        .btn-success { background-color: #10b981; color: white; }
+        .btn-success:hover { background-color: #059669; }
         .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.82rem; }
 
-        /* Form Inputs */
         .form-group {
             margin-bottom: 1.1rem;
         }
@@ -233,7 +230,6 @@
             box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
         }
 
-        /* Status Badge */
         .status-badge {
             padding: 0.25rem 0.6rem;
             border-radius: 50px;
@@ -243,14 +239,13 @@
         }
         .status-SOLICITADA { background: #e0f2fe; color: #0369a1; }
         .status-CONFIRMADA { background: #dcfce7; color: #15803d; }
+        .status-EN_ESPERA { background: #fef3c7; color: #b45309; }
+        .status-EN_CONSULTA { background: #fae8ff; color: #86198f; }
         .status-ATENDIDA { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
         .status-CANCELADA { background: #fee2e2; color: #b91c1c; }
-        .status-REPROGRAMADA { background: #fef3c7; color: #b45309; }
-        .status-BLOQUEADO { background: #ffedd5; color: #c2410c; }
-        .status-COMPLETO { background: #f3e8ff; color: #6b21a8; }
-        .status-DISPONIBLE { background: #e0f2fe; color: #0369a1; }
+        .status-REPROGRAMADA { background: #ffedd5; color: #c2410c; }
+        .status-NO_ASISTIO { background: #f3f4f6; color: #4b5563; }
 
-        /* Footer */
         footer {
             background-color: var(--primary-dark);
             color: #94a3b8;
@@ -276,22 +271,28 @@
         <ul class="navbar-nav">
             @if(Auth::user()->isPaciente())
                 <li><a href="{{ route('paciente.dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge"></i> Inicio</a></li>
+                <li><a href="{{ route('paciente.perfil') }}" class="nav-link"><i class="fa-solid fa-id-card"></i> Mi Perfil ECE</a></li>
                 <li><a href="{{ route('paciente.citas.solicitar') }}" class="nav-link"><i class="fa-solid fa-calendar-plus"></i> Solicitar Cita</a></li>
-                <li><a href="{{ route('paciente.citas.historial') }}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Mis Citas</a></li>
+                <li><a href="{{ route('paciente.citas.historial') }}" class="nav-link"><i class="fa-solid fa-calendar-check"></i> Mis Citas</a></li>
+                <li><a href="{{ route('paciente.historial_clinico') }}" class="nav-link"><i class="fa-solid fa-notes-medical"></i> Historial Médico</a></li>
+                <li><a href="{{ route('paciente.documentos') }}" class="nav-link"><i class="fa-solid fa-file-prescription"></i> Recetas y Docs</a></li>
             @elseif(Auth::user()->isMedico())
-                <li><a href="{{ route('medico.agenda') }}" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Mi Agenda Médica</a></li>
+                <li><a href="{{ route('medico.agenda') }}" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Agenda & Pacientes</a></li>
             @elseif(Auth::user()->isCallCenter())
-                <li><a href="{{ route('ventanilla.dashboard') }}" class="nav-link"><i class="fa-solid fa-desktop"></i> Ventanilla / Call Center</a></li>
-                <li><a href="{{ route('paciente.citas.solicitar') }}" class="nav-link"><i class="fa-solid fa-calendar-check"></i> Asignar Cita</a></li>
-                <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Gestión Agendas</a></li>
+                <li><a href="{{ route('ventanilla.dashboard') }}" class="nav-link"><i class="fa-solid fa-desktop"></i> Dashboard Ventanilla</a></li>
+                <li><a href="{{ route('ventanilla.sala_espera') }}" class="nav-link"><i class="fa-solid fa-users-rectangle"></i> Sala de Espera</a></li>
+                <li><a href="{{ route('ventanilla.walkin') }}" class="nav-link"><i class="fa-solid fa-user-plus"></i> Registro Presencial</a></li>
+                <li><a href="{{ route('ventanilla.caja') }}" class="nav-link"><i class="fa-solid fa-cash-register"></i> Caja & Cobros</a></li>
+                <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Agendas</a></li>
                 <li><a href="{{ route('contingencia.index') }}" class="nav-link"><i class="fa-solid fa-triangle-exclamation"></i> Contingencias</a></li>
             @elseif(Auth::user()->isAdmin())
                 <li><a href="{{ route('admin.dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-line"></i> Dashboard Admin</a></li>
-                <li><a href="{{ route('admin.usuarios') }}" class="nav-link"><i class="fa-solid fa-users-gear"></i> Usuarios y Roles</a></li>
-                <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Agendas</a></li>
-                <li><a href="{{ route('contingencia.index') }}" class="nav-link"><i class="fa-solid fa-bell-concierge"></i> Contingencias</a></li>
+                <li><a href="{{ route('admin.usuarios') }}" class="nav-link"><i class="fa-solid fa-users-gear"></i> Usuarios & Roles</a></li>
+                <li><a href="{{ route('admin.consultorios') }}" class="nav-link"><i class="fa-solid fa-door-open"></i> Consultorios</a></li>
+                <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Agendas Masivas</a></li>
+                <li><a href="{{ route('admin.reportes') }}" class="nav-link"><i class="fa-solid fa-file-chart-column"></i> Reportes PDF/CSV</a></li>
                 <li><a href="{{ route('admin.auditoria') }}" class="nav-link"><i class="fa-solid fa-shield-halved"></i> Auditoría</a></li>
-                <li><a href="{{ route('admin.reportes') }}" class="nav-link"><i class="fa-solid fa-file-chart-column"></i> Reportes</a></li>
+                <li><a href="{{ route('admin.configuracion') }}" class="nav-link"><i class="fa-solid fa-gears"></i> Ajustes</a></li>
             @endif
 
             <li style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 1rem;">
@@ -324,6 +325,13 @@
             </div>
         @endif
 
+        @if(session('warning'))
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>{{ session('warning') }}</div>
+            </div>
+        @endif
+
         @if(session('error'))
             <div class="alert alert-danger">
                 <i class="fa-solid fa-circle-exclamation"></i>
@@ -349,7 +357,7 @@
 
     <!-- Footer -->
     <footer>
-        <p><strong>Hospital Municipal Plan 3000</strong> — Sistema Digital de Gestión de Citas y Turnos</p>
+        <p><strong>Hospital Municipal Plan 3000</strong> — Sistema Digital de Gestión de Citas y Expediente Clínico</p>
         <p style="margin-top: 0.35rem; font-size: 0.8rem;">
             Distrito Municipal 8, Santa Cruz de la Sierra, Bolivia | Call Center: <strong>3494008</strong> |
             <span style="color: #38bdf8;"><i class="fa-solid fa-link"></i> Interoperabilidad SUIS Ministerio de Salud: <strong>ACTIVA</strong></span>

@@ -17,9 +17,16 @@ class Paciente extends Model
         'ci',
         'fecha_nacimiento',
         'genero',
+        'sexo',
+        'nacionalidad',
+        'estado_civil',
+        'ocupacion',
         'direccion',
+        'ciudad',
         'telefono_emergencia',
+        'whatsapp',
         'contacto_emergencia',
+        'relacion_contacto'
     ];
 
     public function usuario()
@@ -32,8 +39,29 @@ class Paciente extends Model
         return $this->hasMany(Cita::class, 'id_paciente', 'id_paciente');
     }
 
-    public function notificaciones()
+    public function expediente()
     {
-        return $this->hasMany(Notificacion::class, 'id_paciente', 'id_paciente');
+        return $this->hasOne(ExpedienteMedico::class, 'id_paciente', 'id_paciente');
+    }
+
+    public function consultas()
+    {
+        return $this->hasMany(Consulta::class, 'id_paciente', 'id_paciente');
+    }
+
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class, 'id_paciente', 'id_paciente');
+    }
+
+    public function documentos()
+    {
+        return $this->hasMany(Documento::class, 'id_paciente', 'id_paciente');
+    }
+
+    public function getEdadAttribute()
+    {
+        if (!$this->fecha_nacimiento) return null;
+        return \Carbon\Carbon::parse($this->fecha_nacimiento)->age;
     }
 }

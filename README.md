@@ -4,6 +4,7 @@
 ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![IEEE 830](https://img.shields.io/badge/IEEE-830--1998-blue?style=for-the-badge)
 
 ---
@@ -22,87 +23,87 @@ El sistema implementa un **modelo híbrido multicanal** (digital, presencial en 
 
 ---
 
-## 🛠️ Especificaciones Técnicas y Requisitos del Sistema
+## 🐳 Opción 1: Despliegue con Docker (Recomendado - 2 Comandos)
 
-### 💻 Requisitos de Hardware Mínimos
-* **Procesador:** Dual Core 2.0 GHz o superior.
-* **Memoria RAM:** 4 GB mínimo (8 GB recomendado).
-* **Almacenamiento:** 2 GB de espacio libre en disco.
+Esta opción permite levantar todo el entorno (Laravel 12, PHP 8.2, Node.js/Vite y MySQL 8.0) sin necesidad de instalar PHP ni MySQL manualmente en su máquina.
 
-### ⚙️ Requisitos de Software
-* **Sistema Operativo:** Windows 10/11, Linux (Ubuntu 20.04+), o macOS.
-* **PHP:** Versión 8.2 o superior.
-  * Extensiones PHP requeridas: `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`.
-* **Base de Datos:** MySQL 8.0+ o MariaDB 10.4+ (Servidor XAMPP / Laragon).
-* **Gestor de Dependencias:** Composer 2.0+.
-* **Navegador Web:** Google Chrome, Mozilla Firefox, Microsoft Edge o Safari (versiones actualizadas).
+### 📋 Requisitos Previos para Docker
+1. Tener instalado **Docker Desktop** en Windows/Mac o **Docker Engine + Docker Compose** en Linux.
+2. **IMPORTANTE:** Abrir e iniciar **Docker Desktop** antes de ejecutar los comandos.
+   > ⚠️ **Nota en Windows:** Asegúrese de que Docker Desktop esté en estado **"Engine running"** (icono de la ballena verde en la bandeja del sistema). Si Docker Desktop está cerrado, obtendrá el error `failed to connect to the docker API`.
 
 ---
 
-## 🚀 Guía de Despliegue e Instalación
+### 🚀 Pasos para Iniciar con Docker (2 Comandos)
 
-### 1️⃣ Clonar o Descargar el Proyecto
-Ubique el proyecto en su directorio local de trabajo:
+#### **1️⃣ Paso 1: Construir y levantar los contenedores**
+Abra una terminal en la raíz del proyecto y ejecute:
 ```bash
-cd c:\Users\kevin\Documents\proyecto-SI-II
+docker compose up -d --build
 ```
+> *Este comando descarga la imagen de MySQL 8.0, construye la imagen de PHP 8.2 con Node.js, prepara el `.env`, compila los assets de Vite, espera la conexión a la base de datos y ejecuta las migraciones automáticamente.*
 
-### 2️⃣ Configurar las Variables de Entorno (`.env`)
-Asegúrese de contar con el archivo `.env` en la raíz del proyecto. Si no existe, copie el archivo de ejemplo:
+#### **2️⃣ Paso 2: Cargar datos iniciales (Seeders)**
 ```bash
-cp .env.example .env
+docker compose exec app php artisan db:seed
 ```
+> *Inserta los usuarios de prueba, especialidades, médicos y configuraciones en la base de datos MySQL del contenedor.*
 
-Verifique la configuración de conexión a la base de datos en `.env`:
-```env
-APP_NAME="Hospital Plan 3000"
-APP_ENV=local
-APP_KEY=base64:...
-APP_DEBUG=true
-APP_URL=http://localhost:8000
+---
 
-APP_LOCALE=es
-APP_FALLBACK_LOCALE=es
+### 🌐 Acceso a la Aplicación
+* **Aplicación Web:** [http://localhost:8000](http://localhost:8000)
+* **Base de Datos MySQL:** `localhost:3307` *(Usuario: `root`, Contraseña: `root`, BD: `hospital_plan3000`)*
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=hospital_plan3000
-DB_USERNAME=root
-DB_PASSWORD=
+### 🛠️ Comandos Útiles de Docker
+* **Ver logs en tiempo real:** `docker compose logs -f`
+* **Detener los contenedores:** `docker compose down`
+* **Reiniciar el proyecto:** `docker compose restart`
+* **Entrar a la consola del contenedor:** `docker compose exec app bash`
 
-SESSION_DRIVER=file
-CACHE_STORE=file
-```
+---
 
-### 3️⃣ Crear la Base de Datos en MySQL
-Asegúrese de que el servidor MySQL/MariaDB esté activo (vía XAMPP o servicio local) y cree la base de datos:
-```sql
-CREATE DATABASE hospital_plan3000 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+## 💻 Opción 2: Despliegue Local Tradicional (PHP + XAMPP)
 
-### 4️⃣ Instalar Dependencias del Proyecto
-Ejecute la instalación de paquetes con Composer:
-```bash
-composer install
-```
+Si prefiere ejecutar el proyecto directamente en su sistema operativo sin Docker:
 
-### 5️⃣ Generar la Clave de la Aplicación
-```bash
-php artisan key:generate
-```
+### ⚙️ Requisitos de Software
+* **PHP:** Versión 8.2 o superior (`pdo_mysql`, `mbstring`, `gd`, `zip`, `bcmath`, `curl`).
+* **Base de Datos:** MySQL 8.0+ o MariaDB (Servidor XAMPP / Laragon en puerto 3306).
+* **Gestores:** Composer 2.0+ y Node.js 18+.
 
-### 6️⃣ Ejecutar Migraciones y Población de Datos Iniciales (Seeders)
-Este comando creará las 10 tablas del diccionario de datos y poblará las especialidades, médicos, agendas y cuentas de usuario:
-```bash
-php artisan migrate:fresh --seed
-```
+### 🚀 Pasos de Instalación Manual
 
-### 7️⃣ Iniciar el Servidor de Desarrollo
-```bash
-php artisan serve --host=127.0.0.1 --port=8000
-```
-Acceda desde su navegador web a: **`http://127.0.0.1:8000/login`**
+1. **Configurar el archivo `.env`:**
+   ```bash
+   cp .env.example .env
+   ```
+   Configurar credenciales de MySQL local (`DB_HOST=127.0.0.1`, `DB_PORT=3306`, `DB_DATABASE=hospital_plan3000`, `DB_USERNAME=root`).
+
+2. **Crear la Base de Datos:**
+   Iniciar XAMPP (MySQL) y crear la base de datos `hospital_plan3000`:
+   ```sql
+   CREATE DATABASE hospital_plan3000 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+3. **Instalar dependencias y compilar:**
+   ```bash
+   composer install
+   npm install
+   npm run build
+   ```
+
+4. **Generar clave y migrar base de datos:**
+   ```bash
+   php artisan key:generate
+   php artisan migrate:fresh --seed
+   ```
+
+5. **Iniciar el servidor:**
+   ```bash
+   php artisan serve --host=127.0.0.1 --port=8000
+   ```
+   Acceda a: **`http://127.0.0.1:8000`**
 
 ---
 
@@ -110,7 +111,7 @@ Acceda desde su navegador web a: **`http://127.0.0.1:8000/login`**
 
 El sistema cuenta con 4 roles preconfigurados con permisos específicos (**RBAC**):
 
-| Rol | Usuario / CI | Contraseña | Funcionalidad Principal |
+| Rol | Usuario / CI / Email | Contraseña | Funcionalidad Principal |
 | :--- | :--- | :--- | :--- |
 | **PACIENTE** | CI: `12345678` (o `juan.perez@mail.com`) | `paciente123` | Dashboard de Paciente, Solicitar Citas en 3 Pasos, Cancelar Citas, Ver Notificaciones. |
 | **PERSONAL VENTANILLA** | `ventanilla@plan3000.gob.bo` | `ventanilla123` | Ventanilla de Atención Presencial, Registro de Pacientes Walk-in, Asignación de Citas. |
@@ -122,13 +123,18 @@ El sistema cuenta con 4 roles preconfigurados con permisos específicos (**RBAC*
 ## 🧪 Ejecución de Pruebas Automáticas
 
 Para validar la integridad de la base de datos, flujo de citas y control de acceso:
-```bash
-php artisan test
-```
+* **Con Docker:**
+  ```bash
+  docker compose exec app php artisan test
+  ```
+* **En local:**
+  ```bash
+  php artisan test
+  ```
 
 ---
 
-## 📊 Estructura de la Base de Datos (10 Tablas)
+## 📊 Estructura de la Base de Datos
 
 1. `roles`: Definición de roles del sistema (`PACIENTE`, `MEDICO`, `CALL_CENTER`, `ADMIN`).
 2. `usuarios`: Credenciales de acceso, contraseñas encriptadas con `bcrypt` y estado de la cuenta.
@@ -140,19 +146,9 @@ php artisan test
 8. `notificaciones`: Registro de envíos simulados vía WhatsApp, SMS y correo electrónico.
 9. `auditorias`: Trazabilidad completa de acciones de usuarios e IP de origen (Cumplimiento RNF04).
 10. `configuraciones`: Parámetros institucionales del hospital e interoperabilidad SUIS Bolivia.
-
----
-
-## 🌐 Despliegue en Servidor de Producción (Apache / Nginx)
-
-Para desplegar la aplicación en un servidor IIS, Nginx o Apache de producción:
-
-1. Configurar la raíz de documentos (DocumentRoot) apuntando a la carpeta **`public/`** del proyecto.
-2. Configurar la directiva `AllowOverride All` en Apache para habilitar la reescritura de URLs en `.htaccess`.
-3. Establecer `APP_ENV=production` y `APP_DEBUG=false` en el archivo `.env`.
-4. Optimizar cachés de Laravel:
-   ```bash
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-   ```
+11. `expedientes_medicos`: Historial y fichas clínicas de pacientes.
+12. `consultas`: Registro de atenciones y consultas médicas.
+13. `consultas_especialidades`: Formularios especializados por rama clínica (Cardiología, Pediatría, etc.).
+14. `pagos`: Registro de comprobantes y pagos de ventanilla / caja.
+15. `consultorios`: Gestión física de consultorios.
+16. `documentos`: Gestión documental y archivos clínicos adjuntos.

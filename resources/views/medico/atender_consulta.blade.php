@@ -4,12 +4,17 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">
-        <div class="card-title">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div class="card-title" style="margin: 0;">
             <i class="fa-solid fa-file-waveform text-primary"></i>
             <span>Expediente Clínico Electrónico (ECE) — Consulta de {{ $cita->medico->especialidad->nombre }}</span>
         </div>
-        <span class="status-badge status-EN_CONSULTA">En Consulta Activa</span>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <a href="{{ route('medico.paciente.historial', $cita->id_paciente) }}" target="_blank" class="btn btn-sm btn-info" style="color: #fff;">
+                <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial Clínico Completo
+            </a>
+            <span class="status-badge status-EN_CONSULTA">En Consulta Activa</span>
+        </div>
     </div>
 
     <!-- Resumen del Paciente -->
@@ -17,15 +22,15 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
             <div>
                 <strong>Paciente:</strong> {{ $cita->paciente->usuario->nombre }} {{ $cita->paciente->usuario->apellido }}<br>
-                <strong>CI:</strong> {{ $cita->paciente->ci }} | <strong>Edad:</strong> {{ $cita->paciente->edad ? $cita->paciente->edad . ' años' : 'N/A' }}
+                <strong>CI:</strong> {{ $cita->paciente->ci }} | <strong>F. Nac:</strong> {{ $cita->paciente->fecha_nacimiento }}
             </div>
             <div>
-                <strong>Sexo:</strong> {{ $paciente->sexo ?? 'Masculino' }} | <strong>Tipo Sangre:</strong> <span style="color: red; font-weight: bold;">{{ $expediente->tipo_sangre ?? 'ORH+' }}</span><br>
-                <strong>Alergias:</strong> {{ $expediente->alergias ?? 'Ninguna conocida' }}
+                <strong>Sexo:</strong> {{ $cita->paciente->sexo ?? $cita->paciente->genero ?? 'N/A' }} | <strong>Tipo Sangre:</strong> <span style="color: red; font-weight: bold;">{{ $expediente->grupo_sanguineo ?? $expediente->tipo_sangre ?? 'ORH+' }}</span><br>
+                <strong>Alergias:</strong> <span style="color: #b91c1c; font-weight: 600;">{{ $expediente->alergias ?? 'Ninguna conocida' }}</span>
             </div>
             <div>
-                <strong>Enfermedades Crónicas:</strong> {{ $expediente->enfermedades_cronicas ?? 'Ninguna' }}<br>
-                <strong>Medicamentos Actuales:</strong> {{ $expediente->medicamentos_actuales ?? 'Ninguno' }}
+                <strong>Antecedentes:</strong> {{ $expediente->antecedentes_patologicos ?? 'Ninguno reportado' }}<br>
+                <strong>Medicamentos Previos:</strong> {{ $expediente->medicamentos_actuales ?? 'Ninguno' }}
             </div>
         </div>
     </div>
@@ -226,26 +231,33 @@
         @endif
 
         <!-- 3. Prescripción de Medicamentos & Receta Digital -->
-        <h4 style="color: var(--primary); margin: 1.5rem 0 1rem 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 0.4rem;">
-            <i class="fa-solid fa-prescription-bottle-medical"></i> 3. Receta Médica Digital
+        <h4 style="color: var(--primary); margin: 1.5rem 0 1rem 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa-solid fa-prescription-bottle-medical"></i> 3. Receta Médica Digital (Enlace con Farmacia)</span>
+            <span style="font-size: 0.8rem; color: #166534; font-weight: normal;"><i class="fa-solid fa-circle-check"></i> Stock de Farmacia Integrado</span>
         </h4>
+
+        <datalist id="lista-medicamentos-farmacia">
+            @foreach($medicamentosCatalogo as $medCat)
+                <option value="{{ $medCat->nombre_comercial }} {{ $medCat->concentracion }} ({{ $medCat->presentacion }}) - Stock: {{ $medCat->stock_actual }}"></option>
+            @endforeach
+        </datalist>
 
         <div id="medicamentos-container">
             <div class="med-item" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-                <input type="text" name="medicamentos_nombre[]" class="form-control" placeholder="Nombre Medicamento (Ej: Paracetamol 500mg)">
-                <input type="text" name="medicamentos_dosis[]" class="form-control" placeholder="Dosis (Ej: 1 comprimido)">
-                <input type="text" name="medicamentos_frecuencia[]" class="form-control" placeholder="Frecuencia (Ej: C/8 horas)">
+                <input type="text" name="medicamentos_nombre[]" list="lista-medicamentos-farmacia" class="form-control" placeholder="Buscar medicamento o insumo en Farmacia...">
+                <input type="text" name="medicamentos_dosis[]" class="form-control" placeholder="Dosis (Ej: 1 comp / 5ml)">
+                <input type="text" name="medicamentos_frecuencia[]" class="form-control" placeholder="Frecuencia (Ej: C/8 hrs)">
                 <input type="text" name="medicamentos_duracion[]" class="form-control" placeholder="Duración (Ej: 5 días)">
             </div>
         </div>
         <button type="button" class="btn btn-sm btn-secondary" onclick="agregarMedicamento()" style="margin-bottom: 1.5rem;">
-            <i class="fa-solid fa-plus"></i> Agregar Otro Medicamento
+            <i class="fa-solid fa-plus"></i> Agregar Otro Medicamento / Insumo
         </button>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
             <div class="form-group">
                 <label class="form-label">Indicaciones de Uso para el Paciente</label>
-                <textarea name="indicaciones" class="form-control" rows="2" placeholder="Indicaciones dietéticas, reposo o toma de medicamentos..."></textarea>
+                <textarea name="indicaciones" class="form-control" rows="2" placeholder="Indicaciones dietéticas, reposo o cuidados..."></textarea>
             </div>
             <div class="form-group">
                 <label class="form-label">Fecha para Próximo Control</label>
@@ -258,7 +270,7 @@
                 <i class="fa-solid fa-arrow-left"></i> Regresar a Agenda
             </a>
             <button type="submit" class="btn btn-success btn-lg">
-                <i class="fa-solid fa-floppy-disk"></i> Finalizar Consulta y Emitir Receta
+                <i class="fa-solid fa-floppy-disk"></i> Finalizar Consulta y Enviar Receta a Farmacia
             </button>
         </div>
     </form>
@@ -284,7 +296,7 @@ function agregarMedicamento() {
     div.className = 'med-item';
     div.style = 'display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;';
     div.innerHTML = `
-        <input type="text" name="medicamentos_nombre[]" class="form-control" placeholder="Nombre Medicamento">
+        <input type="text" name="medicamentos_nombre[]" list="lista-medicamentos-farmacia" class="form-control" placeholder="Buscar medicamento o insumo...">
         <input type="text" name="medicamentos_dosis[]" class="form-control" placeholder="Dosis">
         <input type="text" name="medicamentos_frecuencia[]" class="form-control" placeholder="Frecuencia">
         <input type="text" name="medicamentos_duracion[]" class="form-control" placeholder="Duración">

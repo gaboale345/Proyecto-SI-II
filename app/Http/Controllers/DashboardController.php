@@ -25,6 +25,8 @@ class DashboardController extends Controller
             return redirect()->route('medico.agenda');
         } elseif ($user->isCallCenter()) {
             return redirect()->route('ventanilla.dashboard');
+        } elseif ($user->isFarmacia()) {
+            return redirect()->route('farmacia.dashboard');
         } else {
             return redirect()->route('paciente.dashboard');
         }

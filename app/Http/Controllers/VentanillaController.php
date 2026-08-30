@@ -130,9 +130,17 @@ class VentanillaController extends Controller
 
     public function cajaIndex()
     {
-        $citasSinPago = Cita::with(['paciente.usuario', 'medico.especialidad', 'pago'])
-            ->whereIn('estado', ['CONFIRMADA', 'EN_ESPERA', 'EN_CONSULTA', 'ATENDIDA'])
+        // Citas pendientes de cobro (todas las que no tengan pago o cuyo pago sea PARCIAL / PENDIENTE)
+        $citasSinPago = Cita::with(['paciente.usuario', 'medico.usuario', 'medico.especialidad', 'pago'])
+            ->where(function ($query) {
+                $query->whereDoesntHave('pago')
+                      ->orWhereHas('pago', function ($q) {
+                          $q->where('estado_pago', '!=', 'PAGADO');
+                      });
+            })
+            ->whereNotIn('estado', ['CANCELADA'])
             ->orderBy('fecha_cita', 'desc')
+            ->orderBy('hora_cita', 'asc')
             ->get();
 
         $pagosHoy = Pago::with(['cita.paciente.usuario', 'cita.medico.especialidad', 'cajero'])
@@ -161,34 +169,52 @@ class VentanillaController extends Controller
             'metodo_pago' => 'required|in:EFECTIVO,TARJETA,TRANSFERENCIA,QR',
         ]);
 
-        $cita = Cita::with('paciente')->findOrFail($request->id_cita);
+        $cita = Cita::with(['paciente.usuario', 'medico.usuario', 'medico.especialidad'])->findOrFail($request->id_cita);
         $montoPendiente = max(0, $request->monto_total - $request->monto_pagado);
         $estadoPago = $montoPendiente > 0 ? 'PARCIAL' : 'PAGADO';
         $numeroComprobante = 'REC-' . strtoupper(uniqid());
 
-        $pago = Pago::create([
-            'id_cita' => $cita->id_cita,
-            'id_paciente' => $cita->id_paciente,
-            'id_usuario_caja' => Auth::user()->id_usuario,
-            'monto_total' => $request->monto_total,
-            'monto_pagado' => $request->monto_pagado,
-            'monto_pendiente' => $montoPendiente,
-            'metodo_pago' => $request->metodo_pago,
-            'estado_pago' => $estadoPago,
-            'numero_comprobante' => $numeroComprobante,
-            'observaciones' => 'Cobro registrado en ventanilla por ' . Auth::user()->nombre,
-        ]);
+        $pago = Pago::updateOrCreate(
+            ['id_cita' => $cita->id_cita],
+            [
+                'id_paciente' => $cita->id_paciente,
+                'id_usuario_caja' => Auth::user()->id_usuario,
+                'monto_total' => $request->monto_total,
+                'monto_pagado' => $request->monto_pagado,
+                'monto_pendiente' => $montoPendiente,
+                'metodo_pago' => $request->metodo_pago,
+                'estado_pago' => $estadoPago,
+                'numero_comprobante' => $numeroComprobante,
+                'observaciones' => 'Cobro registrado en ventanilla por ' . Auth::user()->nombre,
+            ]
+        );
+
+        // Si el pago se completó, confirmar la cita para que aparezca habilitada en el médico
+        if ($estadoPago === 'PAGADO') {
+            if ($cita->estado === 'SOLICITADA' || $cita->estado === 'PENDIENTE_PAGO') {
+                $cita->update(['estado' => 'CONFIRMADA']);
+            }
+
+            Notificacion::create([
+                'id_cita' => $cita->id_cita,
+                'id_paciente' => $cita->id_paciente,
+                'tipo' => 'CONFIRMACION',
+                'canal' => 'WHATSAPP',
+                'mensaje' => "Hospital Plan 3000: Pago confirmado ({$numeroComprobante}). Su cita con Dr(a). {$cita->medico->usuario->nombre_completo} para {$cita->medico->especialidad->nombre} está HABILITADA para atención médica.",
+                'estado' => 'ENVIADO',
+            ]);
+        }
 
         Auditoria::create([
             'id_usuario' => Auth::user()->id_usuario,
             'accion' => 'PAGO_REGISTRADO',
             'tabla_afectada' => 'pagos',
             'registro_afectado' => $pago->id_pago,
-            'detalle' => json_encode(['comprobante' => $numeroComprobante, 'monto' => $request->monto_pagado]),
+            'detalle' => json_encode(['comprobante' => $numeroComprobante, 'monto' => $request->monto_pagado, 'estado_pago' => $estadoPago]),
             'fecha_hora' => now(),
             'ip_origen' => $request->ip(),
         ]);
 
-        return redirect()->back()->with('success', 'Pago registrado exitosamente. Comprobante: ' . $numeroComprobante);
+        return redirect()->back()->with('success', "Pago registrado exitosamente ($estadoPago). Comprobante: {$numeroComprobante}. La cita ha sido habilitada para el médico.");
     }
 }

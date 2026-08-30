@@ -13,6 +13,10 @@ use App\Models\ConsultaGinecologia;
 use App\Models\ConsultaTraumatologia;
 use App\Models\Documento;
 use App\Models\ExpedienteMedico;
+use App\Models\Receta;
+use App\Models\RecetaItem;
+use App\Models\MedicamentoFarmacia;
+use App\Models\Paciente;
 use App\Models\Auditoria;
 use Carbon\Carbon;
 
@@ -29,9 +33,13 @@ class MedicoController extends Controller
 
         $fechaSeleccionada = $request->get('fecha', Carbon::today()->format('Y-m-d'));
 
-        $citas = Cita::with(['paciente.usuario', 'paciente.expediente', 'agenda', 'consultorio', 'consulta'])
+        // REGLA CLAVE: Solo mostrar al médico citas que tengan el PAGO COMPLETADO en caja
+        $citas = Cita::with(['paciente.usuario', 'paciente.expediente', 'agenda', 'consultorio', 'consulta', 'pago'])
             ->where('id_medico', $medico->id_medico)
             ->where('fecha_cita', $fechaSeleccionada)
+            ->whereHas('pago', function ($q) {
+                $q->where('estado_pago', 'PAGADO');
+            })
             ->orderBy('hora_cita', 'asc')
             ->get();
 
@@ -83,17 +91,35 @@ class MedicoController extends Controller
         $user = Auth::user();
         $medico = $user->medico;
 
-        $cita = Cita::with(['paciente.usuario', 'paciente.expediente', 'medico.especialidad'])
+        // Validar que la cita pertenezca al médico y esté PAGADA
+        $cita = Cita::with(['paciente.usuario', 'paciente.expediente', 'medico.especialidad', 'pago'])
             ->where('id_medico', $medico->id_medico)
             ->where('id_cita', $id)
             ->firstOrFail();
 
+        if (!$cita->pago || $cita->pago->estado_pago !== 'PAGADO') {
+            return redirect()->route('medico.agenda')->with('error', 'Esta cita no puede ser atendida porque aún no cuenta con el pago registrado en Caja.');
+        }
+
         $expediente = ExpedienteMedico::firstOrCreate(['id_paciente' => $cita->id_paciente]);
+
+        // Cargar historial previo de consultas para referencia médica en la consulta
+        $historialPrevio = Consulta::with(['medico.usuario', 'especialidad', 'receta.items'])
+            ->where('id_paciente', $cita->id_paciente)
+            ->orderBy('fecha_hora', 'desc')
+            ->take(5)
+            ->get();
 
         // Determinar disciplina según especialidad
         $especialidadNombre = mb_strtolower($cita->medico->especialidad->nombre ?? 'medicina general');
 
-        return view('medico.atender_consulta', compact('cita', 'expediente', 'especialidadNombre'));
+        // Catálogo de medicamentos disponibles en farmacia para autocompletado o sugerencia
+        $medicamentosCatalogo = MedicamentoFarmacia::where('estado', 'ACTIVO')
+            ->where('stock_actual', '>', 0)
+            ->orderBy('nombre_comercial', 'asc')
+            ->get(['id_medicamento', 'nombre_comercial', 'nombre_generico', 'presentacion', 'concentracion', 'stock_actual']);
+
+        return view('medico.atender_consulta', compact('cita', 'expediente', 'especialidadNombre', 'historialPrevio', 'medicamentosCatalogo'));
     }
 
     public function guardarConsulta(Request $request, $id)
@@ -233,13 +259,44 @@ class MedicoController extends Controller
             ]);
         }
 
-        // Generar Documento Receta Médica si hay medicamentos
+        // GENERAR RECETA PARA MÓDULO DE FARMACIA Y DOCUMENTO SI HAY MEDICAMENTOS
         if (count($medicamentos) > 0) {
+            $codigoReceta = 'REC-' . strtoupper(uniqid());
+
+            $receta = Receta::create([
+                'id_consulta' => $consulta->id_consulta,
+                'id_paciente' => $cita->id_paciente,
+                'id_medico' => $cita->id_medico,
+                'codigo_receta' => $codigoReceta,
+                'estado' => 'PENDIENTE',
+                'fecha_emision' => now(),
+                'indicaciones_generales' => $request->indicaciones,
+            ]);
+
+            foreach ($medicamentos as $med) {
+                // Intentar asociar con un medicamento existente en el catálogo de farmacia
+                $medFarmacia = MedicamentoFarmacia::where('nombre_comercial', 'LIKE', '%' . $med['nombre'] . '%')
+                    ->orWhere('nombre_generico', 'LIKE', '%' . $med['nombre'] . '%')
+                    ->first();
+
+                RecetaItem::create([
+                    'id_receta' => $receta->id_receta,
+                    'id_medicamento' => $medFarmacia ? $medFarmacia->id_medicamento : null,
+                    'nombre_medicamento' => $med['nombre'],
+                    'dosis' => $med['dosis'],
+                    'frecuencia' => $med['frecuencia'],
+                    'duracion' => $med['duracion'],
+                    'cantidad_solicitada' => 1,
+                    'estado_item' => 'PENDIENTE',
+                ]);
+            }
+
             $htmlReceta = '<h3>HOSPITAL MUNICIPAL PLAN 3000 - RECETA MÉDICA</h3>';
+            $htmlReceta .= '<p><strong>Código de Receta:</strong> ' . $codigoReceta . '</p>';
             $htmlReceta .= '<p><strong>Paciente:</strong> ' . $cita->paciente->usuario->nombre . ' ' . $cita->paciente->usuario->apellido . '</p>';
             $htmlReceta .= '<p><strong>Médico:</strong> Dr(a). ' . Auth::user()->nombre . ' ' . Auth::user()->apellido . '</p>';
             $htmlReceta .= '<p><strong>Fecha:</strong> ' . now()->format('d/m/Y H:i') . '</p><hr>';
-            $htmlReceta .= '<h4>Medicamentos Recetados:</h4><ul>';
+            $htmlReceta .= '<h4>Medicamentos Recetados (Disponibles en Farmacia):</h4><ul>';
             foreach ($medicamentos as $med) {
                 $htmlReceta .= '<li><strong>' . e($med['nombre']) . '</strong> - Dosis: ' . e($med['dosis']) . ' | Frecuencia: ' . e($med['frecuencia']) . ' | Duración: ' . e($med['duracion']) . '</li>';
             }
@@ -250,9 +307,9 @@ class MedicoController extends Controller
                 'id_consulta' => $consulta->id_consulta,
                 'id_medico' => $cita->id_medico,
                 'tipo_documento' => 'RECETA',
-                'titulo' => 'Receta Médica - ' . $cita->medico->especialidad->nombre,
+                'titulo' => 'Receta Médica (' . $codigoReceta . ') - ' . $cita->medico->especialidad->nombre,
                 'contenido_html' => $htmlReceta,
-                'codigo_verificacion' => 'REC-' . strtoupper(uniqid()),
+                'codigo_verificacion' => $codigoReceta,
                 'autorizado_descarga' => true,
             ]);
         }
@@ -260,6 +317,81 @@ class MedicoController extends Controller
         // Actualizar Cita a ATENDIDA
         $cita->update(['estado' => 'ATENDIDA', 'hora_atencion' => now()]);
 
-        return redirect()->route('medico.agenda')->with('success', 'Consulta registrada exitosamente en el Expediente Clínico del Paciente.');
+        return redirect()->route('medico.agenda')->with('success', 'Consulta registrada exitosamente. La receta médica ha sido enviada al módulo de Farmacia.');
+    }
+
+    /**
+     * Muestra el Historial Clínico completo de un paciente con todas sus especialidades.
+     */
+    public function historialPaciente($id_paciente)
+    {
+        $user = Auth::user();
+        $medico = $user->medico;
+
+        $paciente = Paciente::with(['usuario', 'expediente'])->findOrFail($id_paciente);
+        $expediente = ExpedienteMedico::firstOrCreate(['id_paciente' => $paciente->id_paciente]);
+
+        $consultas = Consulta::with([
+            'medico.usuario',
+            'especialidad',
+            'cardiologia',
+            'pediatria',
+            'traumatologia',
+            'ginecologia',
+            'medicinaGeneral',
+            'receta.items',
+            'cita'
+        ])
+        ->where('id_paciente', $id_paciente)
+        ->orderBy('fecha_hora', 'desc')
+        ->get();
+
+        return view('medico.historial_paciente', compact('paciente', 'expediente', 'consultas', 'medico'));
+    }
+
+    /**
+     * Historial general del médico: todos los pacientes que ha atendido con sus consultas.
+     */
+    public function historialConsultas(Request $request)
+    {
+        $user = Auth::user();
+        $medico = $user->medico;
+
+        if (!$medico) {
+            return redirect()->route('login')->with('error', 'No se encontró perfil médico asociado.');
+        }
+
+        $query = Consulta::with(['paciente.usuario', 'especialidad', 'cita', 'receta.items'])
+            ->where('id_medico', $medico->id_medico)
+            ->orderBy('fecha_hora', 'desc');
+
+        // Filtro por búsqueda (nombre o CI del paciente)
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->whereHas('paciente.usuario', function ($q) use ($buscar) {
+                $q->where('nombre', 'LIKE', "%{$buscar}%")
+                  ->orWhere('apellido', 'LIKE', "%{$buscar}%")
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+            });
+        }
+
+        // Filtro por rango de fechas
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha_hora', '>=', $request->fecha_desde);
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha_hora', '<=', $request->fecha_hasta);
+        }
+
+        $consultas = $query->paginate(15)->withQueryString();
+
+        // Estadísticas generales del médico
+        $totalPacientesAtendidos = Consulta::where('id_medico', $medico->id_medico)
+            ->distinct('id_paciente')->count('id_paciente');
+        $totalConsultas = Consulta::where('id_medico', $medico->id_medico)->count();
+
+        return view('medico.historial_consultas', compact(
+            'medico', 'consultas', 'totalPacientesAtendidos', 'totalConsultas'
+        ));
     }
 }

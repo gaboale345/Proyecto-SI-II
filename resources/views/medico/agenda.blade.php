@@ -69,6 +69,10 @@
                                         <i class="fa-solid fa-stethoscope"></i> Atender ECE
                                     </a>
 
+                                    <a href="{{ route('medico.paciente.historial', $c->id_paciente) }}" class="btn btn-sm btn-outline-info" title="Ver Historial Clínico Completo">
+                                        <i class="fa-solid fa-file-medical"></i> Historial
+                                    </a>
+
                                     <form action="{{ route('medico.cita.estado', $c->id_cita) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="estado" value="NO_ASISTIO">
@@ -78,7 +82,12 @@
                                     </form>
                                 </div>
                             @else
-                                <span style="font-size: 0.8rem; color: #166534; font-weight: bold;"><i class="fa-solid fa-check"></i> Consulta Registrada</span>
+                                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: #166534; font-weight: bold;"><i class="fa-solid fa-check"></i> Atendida</span>
+                                    <a href="{{ route('medico.paciente.historial', $c->id_paciente) }}" class="btn btn-sm btn-outline-info" title="Ver Historial Clínico">
+                                        <i class="fa-solid fa-file-medical"></i>
+                                    </a>
+                                </div>
                             @endif
                         </td>
                     </tr>

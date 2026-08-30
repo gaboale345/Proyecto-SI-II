@@ -71,6 +71,11 @@ class Usuario extends Model implements AuthenticatableContract
         return optional($this->role)->nombre_rol === 'ADMIN';
     }
 
+    public function isFarmacia(): bool
+    {
+        return in_array(optional($this->role)->nombre_rol, ['FARMACIA', 'FARMACEUTICO']);
+    }
+
     public function getNombreCompletoAttribute(): string
     {
         return "{$this->nombre} {$this->apellido}";

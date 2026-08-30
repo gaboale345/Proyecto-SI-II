@@ -19,6 +19,7 @@ use App\Models\ExpedienteMedico;
 use App\Models\Consulta;
 use App\Models\ConsultaCardiologia;
 use App\Models\Pago;
+use App\Models\MedicamentoFarmacia;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -47,6 +48,12 @@ class DatabaseSeeder extends Seeder
         $rolPaciente = Role::create([
             'nombre_rol' => 'PACIENTE',
             'descripcion' => 'Paciente del Hospital Municipal Plan 3000',
+            'estado' => 'ACTIVO',
+        ]);
+
+        $rolFarmacia = Role::create([
+            'nombre_rol' => 'FARMACIA',
+            'descripcion' => 'Encargado y Dispensador de Farmacia Hospitalaria',
             'estado' => 'ACTIVO',
         ]);
 
@@ -409,6 +416,206 @@ class DatabaseSeeder extends Seeder
             'habitos' => 'No fuma, no consume alcohol',
             'observaciones_medicas' => 'Sin complicaciones agudas',
         ]);
+
+        // Usuario Farmacia
+        $userFarmacia = Usuario::create([
+            'id_rol' => $rolFarmacia->id_rol,
+            'nombre' => 'Patricia',
+            'apellido' => 'Mercado Saucedo',
+            'email' => 'farmacia@plan3000.gob.bo',
+            'password' => Hash::make('farmacia123'),
+            'telefono' => '78912345',
+            'estado' => 'ACTIVO',
+            'fecha_registro' => now(),
+        ]);
+
+        // Catálogo de Farmacia Hospitalaria
+        $productosFarmacia = [
+            [
+                'codigo_barras' => '777001001',
+                'nombre_comercial' => 'Paracetamol 500mg',
+                'nombre_generico' => 'Acetaminofén / Paracetamol',
+                'categoria' => 'MEDICAMENTO',
+                'presentacion' => 'Caja x 20 tabletas',
+                'concentracion' => '500mg',
+                'stock_actual' => 120,
+                'stock_minimo' => 20,
+                'precio_unitario' => 2.50,
+                'fecha_vencimiento' => '2027-12-31',
+                'lote' => 'LOT-PAR-2026',
+                'ubicacion_estante' => 'Estante A1',
+                'descripcion' => 'Analgésico y antipirético de primera línea',
+            ],
+            [
+                'codigo_barras' => '777001002',
+                'nombre_comercial' => 'Ibuprofeno 400mg',
+                'nombre_generico' => 'Ibuprofeno',
+                'categoria' => 'MEDICAMENTO',
+                'presentacion' => 'Caja x 30 tabletas',
+                'concentracion' => '400mg',
+                'stock_actual' => 85,
+                'stock_minimo' => 15,
+                'precio_unitario' => 4.00,
+                'fecha_vencimiento' => '2027-10-15',
+                'lote' => 'LOT-IBU-2026',
+                'ubicacion_estante' => 'Estante A2',
+                'descripcion' => 'Antiinflamatorio no esteroideo (AINE)',
+            ],
+            [
+                'codigo_barras' => '777001003',
+                'nombre_comercial' => 'Ibuprofeno Jarabe 100mg/5ml',
+                'nombre_generico' => 'Ibuprofeno Suspensión Oral',
+                'categoria' => 'JARABE',
+                'presentacion' => 'Frasco 120ml con dosificador',
+                'concentracion' => '100mg/5ml',
+                'stock_actual' => 45,
+                'stock_minimo' => 10,
+                'precio_unitario' => 18.00,
+                'fecha_vencimiento' => '2027-08-20',
+                'lote' => 'LOT-IBUPED-2026',
+                'ubicacion_estante' => 'Estante B1 (Pediatría)',
+                'descripcion' => 'Suspensión pediátrica para fiebre y dolor',
+            ],
+            [
+                'codigo_barras' => '777001004',
+                'nombre_comercial' => 'Amoxicilina 500mg',
+                'nombre_generico' => 'Amoxicilina Trihidrato',
+                'categoria' => 'MEDICAMENTO',
+                'presentacion' => 'Caja x 24 cápsulas',
+                'concentracion' => '500mg',
+                'stock_actual' => 60,
+                'stock_minimo' => 15,
+                'precio_unitario' => 6.50,
+                'fecha_vencimiento' => '2027-06-30',
+                'lote' => 'LOT-AMX-2026',
+                'ubicacion_estante' => 'Estante A3',
+                'descripcion' => 'Antibiótico betalactámico bactericida',
+            ],
+            [
+                'codigo_barras' => '777001005',
+                'nombre_comercial' => 'Salbutamol Jarabe 2mg/5ml',
+                'nombre_generico' => 'Salbutamol Sulfato',
+                'categoria' => 'JARABE',
+                'presentacion' => 'Frasco 120ml',
+                'concentracion' => '2mg/5ml',
+                'stock_actual' => 30,
+                'stock_minimo' => 10,
+                'precio_unitario' => 15.00,
+                'fecha_vencimiento' => '2027-09-10',
+                'lote' => 'LOT-SAL-2026',
+                'ubicacion_estante' => 'Estante B2',
+                'descripcion' => 'Broncodilatador para asma y broncoespasmo',
+            ],
+            [
+                'codigo_barras' => '777001006',
+                'nombre_comercial' => 'Alcohol Etílico 70%',
+                'nombre_generico' => 'Alcohol Etílico Desnaturalizado',
+                'categoria' => 'INSUMO_MEDICO',
+                'presentacion' => 'Botella 1000ml',
+                'concentracion' => '70%',
+                'stock_actual' => 50,
+                'stock_minimo' => 10,
+                'precio_unitario' => 12.00,
+                'fecha_vencimiento' => '2028-12-31',
+                'lote' => 'LOT-ALC-2026',
+                'ubicacion_estante' => 'Almacén Insumos - Nivel 1',
+                'descripcion' => 'Antiséptico y desinfectante de uso tópico hospitalario',
+            ],
+            [
+                'codigo_barras' => '777001007',
+                'nombre_comercial' => 'Alcohol en Gel 70%',
+                'nombre_generico' => 'Gel antibacterial con aloe',
+                'categoria' => 'INSUMO_MEDICO',
+                'presentacion' => 'Frasco dosificador 500ml',
+                'concentracion' => '70%',
+                'stock_actual' => 40,
+                'stock_minimo' => 10,
+                'precio_unitario' => 14.50,
+                'fecha_vencimiento' => '2028-12-31',
+                'lote' => 'LOT-GEL-2026',
+                'ubicacion_estante' => 'Almacén Insumos - Nivel 1',
+                'descripcion' => 'Desinfección de manos en consultorios y salas',
+            ],
+            [
+                'codigo_barras' => '777001008',
+                'nombre_comercial' => 'Gasas Estériles 10x10 cm',
+                'nombre_generico' => 'Gasa hidrófila estéril',
+                'categoria' => 'MATERIAL_CURACION',
+                'presentacion' => 'Paquete x 10 unidades',
+                'concentracion' => '10x10 cm',
+                'stock_actual' => 200,
+                'stock_minimo' => 30,
+                'precio_unitario' => 3.00,
+                'fecha_vencimiento' => '2029-01-01',
+                'lote' => 'LOT-GAS-2026',
+                'ubicacion_estante' => 'Estante Curaciones C1',
+                'descripcion' => 'Material estéril para curaciones y apósitos',
+            ],
+            [
+                'codigo_barras' => '777001009',
+                'nombre_comercial' => 'Venda Elástica 10cm x 5m',
+                'nombre_generico' => 'Venda de compresión elástica',
+                'categoria' => 'MATERIAL_CURACION',
+                'presentacion' => 'Rollo individual',
+                'concentracion' => '10cm x 5m',
+                'stock_actual' => 60,
+                'stock_minimo' => 15,
+                'precio_unitario' => 8.50,
+                'fecha_vencimiento' => '2029-01-01',
+                'lote' => 'LOT-VEN-2026',
+                'ubicacion_estante' => 'Estante Curaciones C2',
+                'descripcion' => 'Inmovilización y soporte articular en traumatología',
+            ],
+            [
+                'codigo_barras' => '777001010',
+                'nombre_comercial' => 'Jeringas Descartables 5ml c/ Aguja',
+                'nombre_generico' => 'Jeringa hipodérmica 21G x 1.5"',
+                'categoria' => 'INSUMO_MEDICO',
+                'presentacion' => 'Caja x 50 unidades',
+                'concentracion' => '5ml 21G',
+                'stock_actual' => 8, // Stock bajo a propósito para prueba de alerta
+                'stock_minimo' => 15,
+                'precio_unitario' => 1.50,
+                'fecha_vencimiento' => '2029-05-01',
+                'lote' => 'LOT-JER-2026',
+                'ubicacion_estante' => 'Estante Insumos C3',
+                'descripcion' => 'Inyecciones intramusculares y endovenosas',
+            ],
+            [
+                'codigo_barras' => '777001011',
+                'nombre_comercial' => 'Losartán Potásico 50mg',
+                'nombre_generico' => 'Losartán Potásico',
+                'categoria' => 'MEDICAMENTO',
+                'presentacion' => 'Caja x 30 comprimidos',
+                'concentracion' => '50mg',
+                'stock_actual' => 75,
+                'stock_minimo' => 15,
+                'precio_unitario' => 5.00,
+                'fecha_vencimiento' => '2027-11-30',
+                'lote' => 'LOT-LOS-2026',
+                'ubicacion_estante' => 'Estante A4 (Cardiología)',
+                'descripcion' => 'Antihipertensivo antagonista receptor AT1',
+            ],
+            [
+                'codigo_barras' => '777001012',
+                'nombre_comercial' => 'Omeprazol 20mg',
+                'nombre_generico' => 'Omeprazol',
+                'categoria' => 'MEDICAMENTO',
+                'presentacion' => 'Caja x 30 cápsulas',
+                'concentracion' => '20mg',
+                'stock_actual' => 90,
+                'stock_minimo' => 20,
+                'precio_unitario' => 4.50,
+                'fecha_vencimiento' => '2027-09-30',
+                'lote' => 'LOT-OME-2026',
+                'ubicacion_estante' => 'Estante A5',
+                'descripcion' => 'Inhibidor de bomba de protones para gastritis y reflujo',
+            ],
+        ];
+
+        foreach ($productosFarmacia as $prod) {
+            MedicamentoFarmacia::create($prod);
+        }
 
         // 6. Configuraciones del Sistema
         Configuracion::create(['clave' => 'NOMBRE_HOSPITAL', 'valor' => 'Hospital Municipal Plan 3000', 'descripcion' => 'Nombre institucional']);

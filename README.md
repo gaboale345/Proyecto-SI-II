@@ -109,14 +109,15 @@ Si prefiere ejecutar el proyecto directamente en su sistema operativo sin Docker
 
 ## 🔑 Credenciales de Acceso para Pruebas (Demo)
 
-El sistema cuenta con 4 roles preconfigurados con permisos específicos (**RBAC**):
+El sistema cuenta con 5 roles preconfigurados con permisos específicos (**RBAC**):
 
 | Rol | Usuario / CI / Email | Contraseña | Funcionalidad Principal |
 | :--- | :--- | :--- | :--- |
-| **PACIENTE** | CI: `12345678` (o `juan.perez@mail.com`) | `paciente123` | Dashboard de Paciente, Solicitar Citas en 3 Pasos, Cancelar Citas, Ver Notificaciones. |
-| **PERSONAL VENTANILLA** | `ventanilla@plan3000.gob.bo` | `ventanilla123` | Ventanilla de Atención Presencial, Registro de Pacientes Walk-in, Asignación de Citas. |
-| **MÉDICO** | `jperez@plan3000.gob.bo` | `medico123` | Agenda Médica Personal, Atender Citas, Registrar Inasistencias de Pacientes. |
-| **ADMINISTRADOR** | `admin@plan3000.gob.bo` | `admin123` | Panel de Administración, CRUD Usuarios y Roles, Auditoría y Módulo de Contingencia. |
+| **PACIENTE** | CI: `12345678` (o `juan.perez@mail.com`) | `paciente123` | Dashboard de Paciente, Solicitar Citas, Cancelar Citas, Ver Notificaciones, Historial Clínico. |
+| **PERSONAL VENTANILLA** | `ventanilla@plan3000.gob.bo` | `ventanilla123` | Ventanilla de Atención Presencial, Registro de Walk-in, Caja y Cobro de Citas para habilitar al médico. |
+| **MÉDICO** | `jperez@plan3000.gob.bo` | `medico123` | Agenda Personal (Solo citas pagadas), ECE por Especialidad, Historial Clínico Completo y Emisión de Recetas. |
+| **FARMACIA** | `farmacia@plan3000.gob.bo` | `farmacia123` | Bandeja de Recetas Médicas en tiempo real, Despacho, Control de Stock e Inventario (Jarabes, Alcohol, Insumos). |
+| **ADMINISTRADOR** | `admin@plan3000.gob.bo` | `admin123` | Panel de Administración, CRUD Usuarios y Roles, Auditoría, Consultorios, Reportes y Contingencia. |
 
 ---
 
@@ -136,19 +137,23 @@ Para validar la integridad de la base de datos, flujo de citas y control de acce
 
 ## 📊 Estructura de la Base de Datos
 
-1. `roles`: Definición de roles del sistema (`PACIENTE`, `MEDICO`, `CALL_CENTER`, `ADMIN`).
+1. `roles`: Definición de roles del sistema (`PACIENTE`, `MEDICO`, `CALL_CENTER`, `FARMACIA`, `ADMIN`).
 2. `usuarios`: Credenciales de acceso, contraseñas encriptadas con `bcrypt` y estado de la cuenta.
 3. `pacientes`: Datos específicos de pacientes, Cédula de Identidad (`ci`) y contactos de emergencia.
 4. `especialidades`: Catálogo de especialidades médicas y duración estándar del turno.
 5. `medicos`: Perfil profesional de médicos, colegiatura y vinculación a especialidad.
 6. `agendas`: Bloques de tiempo, cupos disponibles y estado de la disponibilidad (`DISPONIBLE`, `BLOQUEADO`, `COMPLETO`).
-7. `citas`: Registro de solicitudes de citas, estado (`SOLICITADA`, `CONFIRMADA`, `ATENDIDA`, `CANCELADA`) y motivo.
+7. `citas`: Registro de solicitudes de citas, estado y condición de pago obligatorio.
 8. `notificaciones`: Registro de envíos simulados vía WhatsApp, SMS y correo electrónico.
-9. `auditorias`: Trazabilidad completa de acciones de usuarios e IP de origen (Cumplimiento RNF04).
+9. `auditorias`: Trazabilidad completa de acciones de usuarios e IP de origen.
 10. `configuraciones`: Parámetros institucionales del hospital e interoperabilidad SUIS Bolivia.
 11. `expedientes_medicos`: Historial y fichas clínicas de pacientes.
-12. `consultas`: Registro de atenciones y consultas médicas.
-13. `consultas_especialidades`: Formularios especializados por rama clínica (Cardiología, Pediatría, etc.).
-14. `pagos`: Registro de comprobantes y pagos de ventanilla / caja.
+12. `consultas`: Registro de atenciones y consultas médicas ECE.
+13. `consultas_especialidades`: Formularios especializados por rama clínica (Cardiología, Pediatría, Traumatología, Ginecología, Medicina General).
+14. `pagos`: Registro de comprobantes y recaudaciones de ventanilla / caja.
 15. `consultorios`: Gestión física de consultorios.
-16. `documentos`: Gestión documental y archivos clínicos adjuntos.
+16. `documentos`: Gestión documental y recetas médicas descargables.
+17. `medicamentos_farmacia`: Catálogo de farmacia con control de stock, lotes, vencimiento y precios.
+18. `recetas`: Prescripciones médicas emitidas en consultas para despacho en farmacia.
+19. `receta_items`: Ítems detallados de cada receta médica.
+20. `dispensaciones`: Registro de entregas y salidas de medicamentos en farmacia.

@@ -106,6 +106,7 @@
         .badge-medico { background-color: #10b981; color: white; }
         .badge-ventanilla { background-color: #f59e0b; color: white; }
         .badge-paciente { background-color: #3b82f6; color: white; }
+        .badge-farmacia { background-color: #0d9488; color: white; }
 
         .container {
             max-width: 1280px;
@@ -278,6 +279,7 @@
                 <li><a href="{{ route('paciente.documentos') }}" class="nav-link"><i class="fa-solid fa-file-prescription"></i> Recetas y Docs</a></li>
             @elseif(Auth::user()->isMedico())
                 <li><a href="{{ route('medico.agenda') }}" class="nav-link"><i class="fa-solid fa-user-doctor"></i> Agenda & Pacientes</a></li>
+                <li><a href="{{ route('medico.historial_consultas') }}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
             @elseif(Auth::user()->isCallCenter())
                 <li><a href="{{ route('ventanilla.dashboard') }}" class="nav-link"><i class="fa-solid fa-desktop"></i> Dashboard Ventanilla</a></li>
                 <li><a href="{{ route('ventanilla.sala_espera') }}" class="nav-link"><i class="fa-solid fa-users-rectangle"></i> Sala de Espera</a></li>
@@ -285,9 +287,14 @@
                 <li><a href="{{ route('ventanilla.caja') }}" class="nav-link"><i class="fa-solid fa-cash-register"></i> Caja & Cobros</a></li>
                 <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Agendas</a></li>
                 <li><a href="{{ route('contingencia.index') }}" class="nav-link"><i class="fa-solid fa-triangle-exclamation"></i> Contingencias</a></li>
+            @elseif(Auth::user()->isFarmacia())
+                <li><a href="{{ route('farmacia.dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge"></i> Panel Farmacia</a></li>
+                <li><a href="{{ route('farmacia.recetas') }}" class="nav-link"><i class="fa-solid fa-prescription"></i> Bandeja Recetas</a></li>
+                <li><a href="{{ route('farmacia.inventario') }}" class="nav-link"><i class="fa-solid fa-boxes-stacked"></i> Catálogo & Stock</a></li>
             @elseif(Auth::user()->isAdmin())
                 <li><a href="{{ route('admin.dashboard') }}" class="nav-link"><i class="fa-solid fa-chart-line"></i> Dashboard Admin</a></li>
                 <li><a href="{{ route('admin.usuarios') }}" class="nav-link"><i class="fa-solid fa-users-gear"></i> Usuarios & Roles</a></li>
+                <li><a href="{{ route('farmacia.dashboard') }}" class="nav-link"><i class="fa-solid fa-pills"></i> Farmacia</a></li>
                 <li><a href="{{ route('admin.consultorios') }}" class="nav-link"><i class="fa-solid fa-door-open"></i> Consultorios</a></li>
                 <li><a href="{{ route('agendas.index') }}" class="nav-link"><i class="fa-solid fa-calendar-days"></i> Agendas Masivas</a></li>
                 <li><a href="{{ route('admin.reportes') }}" class="nav-link"><i class="fa-solid fa-file-chart-column"></i> Reportes PDF/CSV</a></li>

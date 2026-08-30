@@ -57,12 +57,15 @@
                 <i class="fa-solid fa-user"></i> Paciente (CI: 12345678)
             </button>
             <button onclick="fillLogin('ventanilla@plan3000.gob.bo', 'ventanilla123')" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-                <i class="fa-solid fa-headset"></i> Ventanilla / Call Center
+                <i class="fa-solid fa-headset"></i> Ventanilla / Caja
             </button>
             <button onclick="fillLogin('jperez@plan3000.gob.bo', 'medico123')" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
                 <i class="fa-solid fa-user-doctor"></i> Médico (Dr. Pérez)
             </button>
-            <button onclick="fillLogin('admin@plan3000.gob.bo', 'admin123')" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
+            <button onclick="fillLogin('farmacia@plan3000.gob.bo', 'farmacia123')" class="btn btn-secondary btn-sm" style="justify-content: flex-start; background: #e0f2fe; color: #0369a1; border-color: #7dd3fc; font-weight: 600;">
+                <i class="fa-solid fa-pills"></i> Farmacia (Lic. Mercado)
+            </button>
+            <button onclick="fillLogin('admin@plan3000.gob.bo', 'admin123')" class="btn btn-secondary btn-sm" style="justify-content: flex-start; grid-column: span 2;">
                 <i class="fa-solid fa-user-gear"></i> Administrador
             </button>
         </div>

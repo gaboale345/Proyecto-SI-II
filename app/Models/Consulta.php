@@ -82,4 +82,9 @@ class Consulta extends Model
     {
         return $this->hasOne(ConsultaTraumatologia::class, 'id_consulta', 'id_consulta');
     }
+
+    public function receta()
+    {
+        return $this->hasOne(Receta::class, 'id_consulta', 'id_consulta');
+    }
 }

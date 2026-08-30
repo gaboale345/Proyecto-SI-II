@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\VentanillaController;
 use App\Http\Controllers\ContingenciaController;
+use App\Http\Controllers\FarmaciaController;
 use App\Http\Middleware\CheckRole;
 
 Route::get('/', function () {
@@ -52,6 +53,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/medico/cita/{id}/estado', [MedicoController::class, 'cambiarEstadoCita'])->name('medico.cita.estado');
         Route::get('/medico/cita/{id}/atender', [MedicoController::class, 'atenderConsultaForm'])->name('medico.cita.atender');
         Route::post('/medico/cita/{id}/guardar-consulta', [MedicoController::class, 'guardarConsulta'])->name('medico.cita.guardar_consulta');
+        Route::get('/medico/paciente/{id_paciente}/historial', [MedicoController::class, 'historialPaciente'])->name('medico.paciente.historial');
+        Route::get('/medico/historial-consultas', [MedicoController::class, 'historialConsultas'])->name('medico.historial_consultas');
+    });
+
+    // Rutas Farmacia
+    Route::middleware([CheckRole::class . ':FARMACIA,ADMIN'])->group(function () {
+        Route::get('/farmacia/dashboard', [FarmaciaController::class, 'dashboard'])->name('farmacia.dashboard');
+        Route::get('/farmacia/inventario', [FarmaciaController::class, 'inventarioIndex'])->name('farmacia.inventario');
+        Route::post('/farmacia/inventario/guardar', [FarmaciaController::class, 'guardarProducto'])->name('farmacia.producto.guardar');
+        Route::post('/farmacia/inventario/{id}/actualizar-stock', [FarmaciaController::class, 'actualizarStock'])->name('farmacia.producto.actualizar_stock');
+        Route::get('/farmacia/recetas', [FarmaciaController::class, 'recetasIndex'])->name('farmacia.recetas');
+        Route::get('/farmacia/recetas/{id}/despachar', [FarmaciaController::class, 'despacharRecetaForm'])->name('farmacia.recetas.despachar_form');
+        Route::post('/farmacia/recetas/{id}/despachar', [FarmaciaController::class, 'procesarDespacho'])->name('farmacia.recetas.despachar');
     });
 
     // Rutas Ventanilla / Recepción / Call Center
